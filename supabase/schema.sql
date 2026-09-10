@@ -117,6 +117,16 @@ as $$
   select coalesce(public.current_user_role() = 'admin', false);
 $$;
 
+create or replace function public.is_kitchen()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(public.current_user_role() = 'kitchen', false);
+$$;
+
 create or replace function public.can_operate_motoboy(target_id uuid)
 returns boolean
 language sql
@@ -248,6 +258,8 @@ grant execute on function public.admin_update_profile(uuid, text, text, text, te
 grant execute on function public.admin_delete_user(uuid) to authenticated;
 grant execute on function public.current_user_role() to authenticated;
 grant execute on function public.is_admin() to authenticated;
+revoke all on function public.is_kitchen() from public;
+grant execute on function public.is_kitchen() to authenticated;
 grant execute on function public.can_operate_motoboy(uuid) to authenticated;
 
 -- Inclui as tabelas no Realtime sem falhar se o script for executado novamente.
@@ -487,7 +499,7 @@ returns table (
   deliveries_today integer, distance_today numeric
 ) language plpgsql stable security definer set search_path = '' as $$
 begin
-  if coalesce(public.current_user_role()::text, '') not in ('kitchen', 'admin') then raise exception 'Acesso negado'; end if;
+  if not public.is_kitchen() then raise exception 'Acesso exclusivo da cozinha'; end if;
   return query
   select p.id, p.full_name, p.username, p.phone, p.motorcycle_model, p.motorcycle_plate, p.last_seen, a.available_since,
     count(d.id)::integer, coalesce(sum(d.distance_km), 0)::numeric
@@ -504,7 +516,7 @@ create or replace function public.dispatch_motoboy(target_motoboy_id uuid)
 returns public.availability language plpgsql security definer set search_path = '' as $$
 declare result public.availability;
 begin
-  if coalesce(public.current_user_role()::text, '') not in ('kitchen', 'admin') then raise exception 'Acesso negado'; end if;
+  if not public.is_kitchen() then raise exception 'Acesso exclusivo da cozinha'; end if;
   update public.availability set status = 'on_delivery', current_source = 'dispatch'
   where user_id = target_motoboy_id and status = 'available' returning * into result;
   if result.id is null then raise exception 'Este motoboy não está mais disponível'; end if;
@@ -772,7 +784,7 @@ create or replace function public.dispatch_motoboy(target_motoboy_id uuid, deliv
 returns public.availability language plpgsql security definer set search_path = '' as $$
 declare result public.availability; normalized_order text; existing_name text; existing_time text;
 begin
-  if coalesce(public.current_user_role()::text, '') not in ('kitchen', 'admin') then raise exception 'Acesso negado'; end if;
+  if not public.is_kitchen() then raise exception 'Acesso exclusivo da cozinha'; end if;
   normalized_order := public.normalize_order_number(delivery_order_number);
   if normalized_order <> '' then
     select p.full_name, to_char(d.delivered_at at time zone 'America/Sao_Paulo', 'HH24:MI') into existing_name, existing_time
@@ -908,7 +920,7 @@ create or replace function public.get_kitchen_queue()
 returns table (user_id uuid, full_name text, username text, phone text, motorcycle_model text, motorcycle_plate text, last_seen timestamptz, available_since timestamptz, deliveries_today integer, distance_today numeric)
 language plpgsql stable security definer set search_path = '' as $$
 begin
-  if coalesce(public.current_user_role()::text, '') not in ('kitchen', 'admin') then raise exception 'Acesso negado'; end if;
+  if not public.is_kitchen() then raise exception 'Acesso exclusivo da cozinha'; end if;
   return query select p.id, p.full_name, p.username, p.phone, p.motorcycle_model, p.motorcycle_plate, p.last_seen, a.available_since,
     count(d.id)::integer, coalesce(sum(d.distance_km), 0)::numeric
   from public.availability a join public.profiles p on p.id = a.user_id

@@ -6,6 +6,7 @@ Sistema web mobile-first para controlar disponibilidade, fila, entregas e pagame
 
 - Cadastro público exclusivo para motoboys e login com sessão persistente.
 - Redirecionamento por função: `motoboy`, `kitchen` ou `admin`.
+- Áreas de cozinha e administração estritamente separadas no frontend e nas funções protegidas do banco.
 - Status `offline`, `available` e `on_delivery`, tempo de espera e heartbeat de atividade.
 - Painel da cozinha em tempo real, fila ordenada por `available_since` crescente, despacho e resumo diário sem dados financeiros.
 - Registro manual ou por despacho, correção/cancelamento lógico em até 10 minutos e histórico diário.
@@ -84,7 +85,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_SUA_CHAVE_PUBLICA
 
 Nunca use uma chave `sb_secret_...` ou `service_role` no frontend. Elas ignoram RLS e pertencem exclusivamente a ambientes seguros de servidor.
 
-Se o banco já estava rodando com a versão anterior do sistema, também é possível aplicar somente a migração incremental [`20260910190000_add_order_numbers.sql`](supabase/migrations/20260910190000_add_order_numbers.sql). Em uma instalação nova, use apenas o `schema.sql`, que já contém essa evolução.
+Se o banco já estava rodando com uma versão anterior do sistema, aplique as migrações pendentes de [`supabase/migrations`](supabase/migrations) na ordem do nome dos arquivos. Em uma instalação nova, use apenas o `schema.sql`, que já contém todas as evoluções.
 
 ### Autenticação
 
@@ -100,6 +101,8 @@ Se **Confirm email** estiver habilitado, o novo usuário precisará confirmar o 
 O `schema.sql` habilita RLS, cria todas as policies e adiciona `profiles`, `availability`, `deliveries`, `payment_closings` e `delivery_activity` à publication `supabase_realtime`. `delivery_activity` é um canal sem dados financeiros usado para atualizar os totais da cozinha. Confirme em **Database > Publications** que essas tabelas aparecem em `supabase_realtime`.
 
 Motoboys não têm permissão SQL direta para definir valores: cadastro, correção em até 10 minutos e cancelamento passam por RPCs restritas. A cozinha recebe somente os campos operacionais através de `get_kitchen_queue`, sem valores financeiros. Funções administrativas verificam `is_admin()` no banco. As ações financeiras relevantes geram registros em `audit_logs`.
+
+Cada conta possui uma única função. A conta `kitchen` acessa somente `/cozinha` e as RPCs de fila/despacho; a conta `admin` acessa somente `/admin`. Uma tentativa de abrir a rota da outra função é redirecionada, e o banco repete a verificação independentemente do frontend.
 
 ## 3. Criar o primeiro administrador
 
@@ -135,6 +138,8 @@ npm run test:pricing
 
 Depois de aplicar o schema, execute `supabase/pricing_tests.sql` no SQL Editor para validar a função oficial do PostgreSQL com os mesmos 16 casos de borda.
 O teste também confirma que `001` continua sendo `001` depois da normalização.
+
+Execute também `supabase/security_tests.sql` para confirmar que fila e despacho exigem o perfil `kitchen` e que a auditoria continua exclusiva do administrador.
 
 Para testar o Realtime, abra uma sessão de motoboy no celular/janela anônima e a cozinha em outra sessão. Ao alternar o status, o card deve entrar ou sair da fila sem recarregar a página.
 

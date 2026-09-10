@@ -31,7 +31,7 @@ export default function App() {
           <Route path="/motoboy" element={<MotoboyPage />} />
         </Route>
       </Route>
-      <Route element={<ProtectedRoute allowedRoles={['kitchen', 'admin']} />}>
+      <Route element={<ProtectedRoute allowedRoles={['kitchen']} />}>
         <Route element={<AppShell />}>
           <Route path="/cozinha" element={<KitchenPage />} />
         </Route>

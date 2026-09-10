@@ -21,7 +21,7 @@ export default function AppShell() {
         </a>
         <nav className="main-nav" aria-label="Navegação principal">
           {profile?.role === 'motoboy' && <NavLink to="/motoboy"><Bike size={18} /> Meu status</NavLink>}
-          {(profile?.role === 'kitchen' || profile?.role === 'admin') && <NavLink to="/cozinha"><ChefHat size={18} /> Cozinha</NavLink>}
+          {profile?.role === 'kitchen' && <NavLink to="/cozinha"><ChefHat size={18} /> Cozinha</NavLink>}
           {profile?.role === 'admin' && <NavLink to="/admin"><LayoutDashboard size={18} /> Administração</NavLink>}
         </nav>
         <button className="header-logout" type="button" onClick={logout} title="Sair da conta">
