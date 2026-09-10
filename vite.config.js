@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['octopus-mark.svg', 'octopus-logo.jpg'],
+      includeAssets: ['octopus-logo.jpg', 'pwa-icon-192.png', 'pwa-icon-512.png', 'pwa-icon-maskable-512.png'],
       manifest: {
         name: 'Octopus Motoboy Control',
         short_name: 'Octopus',
@@ -20,9 +20,9 @@ export default defineConfig({
         lang: 'pt-BR',
         orientation: 'any',
         icons: [
-          { src: '/octopus-logo.jpg', sizes: '635x635', type: 'image/jpeg', purpose: 'any' },
-          { src: '/octopus-mark.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: '/octopus-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' }
+          { src: '/pwa-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/pwa-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/pwa-icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
         ]
       },
       workbox: {

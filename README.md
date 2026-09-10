@@ -175,7 +175,7 @@ Para trocar a marca futuramente, edite `src/config/brand.js`, os metadados em `v
 - A cozinha sinaliza visualmente motoboys disponíveis sem atividade há 10 minutos, mas não os remove automaticamente.
 - Ao reconectar, as páginas consultam o servidor novamente; a alteração de disponibilidade fica bloqueada offline para evitar um estado local incorreto.
 - Exclusão administrativa remove contas sem histórico. Contas que já possuem entregas ou fechamentos devem ser desativadas para preservar a trilha financeira e de auditoria.
-- A identidade visual principal usa `public/octopus-logo.jpg`; os SVGs são mantidos como ícones leves e maskable da PWA.
+- A identidade visual principal usa `public/octopus-logo.jpg`; os ícones PNG de 192 px, 512 px e maskable da PWA são derivados da mesma logo.
 - O relatório administrativo possui filtros para hoje, ontem, semanas, meses e período personalizado, além de exportações CSV.
 - A busca rápida de pedidos consulta todas as datas. Os filtros do relatório combinam pedido, motoboy, período, status, faixa de KM e pagamento.
 - O detalhe administrativo mostra dados completos, fechamento e trilha de auditoria; a área de conferência resume os pedidos de um motoboy em uma data.
