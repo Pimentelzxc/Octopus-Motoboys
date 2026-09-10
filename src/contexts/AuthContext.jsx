@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { isSupabaseConfigured, requireSupabase, supabase } from '../lib/supabase'
+import { isSupabaseConfigured, requireSupabase, supabase, supabaseConfigurationError } from '../lib/supabase'
 
 const AuthContext = createContext(null)
 
@@ -111,6 +111,7 @@ export function AuthProvider({ children }) {
     profile,
     loading,
     authError,
+    configurationError: supabaseConfigurationError,
     configured: isSupabaseConfigured,
     signIn,
     signUp,

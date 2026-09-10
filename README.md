@@ -41,17 +41,17 @@ O motoboy pode registrar uma entrega manualmente ou finalizar uma corrida inicia
 
 A cozinha pode informar o pedido ao chamar um motoboy. Nesse caso, uma entrega `in_progress` reserva o número imediatamente e o motoboy informa apenas a quilometragem ao finalizar. Sem número no despacho, o motoboy o informa junto com o KM. Registros manuais nascem diretamente como `completed`.
 
-| Distância | Valor |
-|---|---:|
-| Até 4,00 km | R$ 6,00 |
-| Acima de 4,00 até 5,00 km | R$ 7,00 |
-| Acima de 5,00 até 6,00 km | R$ 8,00 |
-| Acima de 6,00 até 7,00 km | R$ 9,50 |
-| Acima de 7,00 até 8,00 km | R$ 11,00 |
-| Acima de 8,00 até 10,00 km | R$ 15,00 |
-| Acima de 10,00 até 12,00 km | R$ 17,00 |
-| Acima de 12,00 até 13,00 km | R$ 19,00 |
-| Acima de 13,00 km | Pendente de aprovação |
+| Distância                   |                   Valor |
+| ---------------------------- | ----------------------: |
+| Até 4,00 km                 |                 R$ 6,00 |
+| Acima de 4,00 até 5,00 km   |                 R$ 7,00 |
+| Acima de 5,00 até 6,00 km   |                 R$ 8,00 |
+| Acima de 6,00 até 7,00 km   |                 R$ 9,50 |
+| Acima de 7,00 até 8,00 km   |                R$ 11,00 |
+| Acima de 8,00 até 10,00 km  |                R$ 15,00 |
+| Acima de 10,00 até 12,00 km |                R$ 17,00 |
+| Acima de 12,00 até 13,00 km |                R$ 19,00 |
+| Acima de 13,00 km            | Pendente de aprovação |
 
 Quilometragem e dinheiro usam `NUMERIC`, nunca ponto flutuante. Entregas acima de 13 km ficam com `pricing_status = 'pending'` e valores nulos até o ajuste de um administrador.
 
@@ -74,15 +74,15 @@ No macOS/Linux, use `cp .env.example .env`.
 
 1. Crie um projeto em [supabase.com](https://supabase.com/).
 2. Abra **SQL Editor**, crie uma consulta e execute todo o conteúdo de [`supabase/schema.sql`](supabase/schema.sql). O arquivo é idempotente e também atualiza uma instalação anterior sem apagar perfis ou disponibilidades.
-3. Em **Project Settings > API**, copie a URL do projeto e a chave pública `anon`.
+3. Em **Project Settings > API Keys**, copie a URL do projeto e a chave pública `Publishable` (`sb_publishable_...`).
 4. Preencha o `.env`:
 
 ```env
 VITE_SUPABASE_URL=https://SEU-ID.supabase.co
-VITE_SUPABASE_ANON_KEY=SUA_CHAVE_ANON_PUBLICA
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_SUA_CHAVE_PUBLICA
 ```
 
-Nunca use a `service_role` no frontend.
+Nunca use uma chave `sb_secret_...` ou `service_role` no frontend. Elas ignoram RLS e pertencem exclusivamente a ambientes seguros de servidor.
 
 Se o banco já estava rodando com a versão anterior do sistema, também é possível aplicar somente a migração incremental [`20260910190000_add_order_numbers.sql`](supabase/migrations/20260910190000_add_order_numbers.sql). Em uma instalação nova, use apenas o `schema.sql`, que já contém essa evolução.
 
@@ -142,7 +142,7 @@ Para testar o Realtime, abra uma sessão de motoboy no celular/janela anônima e
 
 1. Envie o projeto para um repositório Git e importe-o na Vercel.
 2. A Vercel detectará Vite. O comando de build é `npm run build` e a pasta de saída é `dist`.
-3. Em **Project Settings > Environment Variables**, cadastre `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` para Production (e Preview, se desejar).
+3. Em **Project Settings > Environment Variables**, cadastre `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` para Production (e Preview, se desejar).
 4. Faça um novo deploy após cadastrar as variáveis.
 5. Adicione o domínio final às Redirect URLs do Supabase.
 
