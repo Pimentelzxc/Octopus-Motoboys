@@ -3,6 +3,20 @@
 
 begin;
 
+-- Mantém esta migração segura mesmo quando a migration de separação ainda não foi aplicada.
+create or replace function public.is_kitchen()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(public.current_user_role() = 'kitchen', false);
+$$;
+
+revoke all on function public.is_kitchen() from public;
+grant execute on function public.is_kitchen() to authenticated;
+
 drop index if exists public.deliveries_one_active_per_motoboy;
 create index if not exists deliveries_active_motoboy_idx
   on public.deliveries (motoboy_id, created_at)
