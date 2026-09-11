@@ -6,16 +6,19 @@ self.addEventListener('push', (event) => {
     payload = { body: event.data?.text() }
   }
 
+  const notificationTimestamp = payload.timestamp || Date.now()
+
   event.waitUntil(self.registration.showNotification(payload.title || 'Octopus', {
     body: payload.body || 'Você recebeu uma nova chamada.',
     icon: payload.icon || '/pwa-icon-192.png',
     badge: payload.badge || '/pwa-icon-192.png',
-    tag: payload.tag || 'octopus-dispatch',
+    // Uma tag única impede que iOS/Android substituam silenciosamente a chamada anterior.
+    tag: `octopus-dispatch-${notificationTimestamp}`,
     renotify: true,
     requireInteraction: true,
     silent: false,
     vibrate: [300, 120, 300],
-    timestamp: payload.timestamp || Date.now(),
+    timestamp: notificationTimestamp,
     data: { url: payload.url || '/motoboy' },
   }))
 })

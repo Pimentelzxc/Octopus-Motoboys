@@ -98,14 +98,15 @@ Deno.serve(async (request) => {
 
   webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey)
 
+  const notificationTimestamp = Date.now()
   const payload = JSON.stringify({
     title: 'Octopus — Nova entrega',
     body: `${target.full_name.split(' ')[0]}, a cozinha chamou você para uma entrega.`,
     icon: '/pwa-icon-192.png',
     badge: '/pwa-icon-192.png',
-    tag: `dispatch-${targetUserId}`,
+    tag: `dispatch-${targetUserId}-${notificationTimestamp}`,
     url: '/motoboy',
-    timestamp: Date.now(),
+    timestamp: notificationTimestamp,
   })
 
   let sent = 0
