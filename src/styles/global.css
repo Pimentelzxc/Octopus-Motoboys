@@ -107,7 +107,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .brand span { display: grid; line-height: 1.05; }
 .brand strong { letter-spacing: .13em; font-size: .86rem; }
 .brand small { color: var(--muted); font-size: .62rem; margin-top: 5px; }
-.main-nav { display: flex; align-self: stretch; order: 3; position: fixed; z-index: 25; left: 0; right: 0; bottom: 0; height: calc(70px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: rgba(18,14,16,.97); padding: 5px 4px env(safe-area-inset-bottom); }
+.main-nav { display: flex; }
+.main-nav--desktop { display: none; }
+.main-nav--mobile { position: fixed; z-index: 25; left: 0; right: 0; bottom: 0; height: calc(70px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: rgba(18,14,16,.97); padding: 5px 4px env(safe-area-inset-bottom); }
 .main-nav a { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: .73rem; font-weight: 700; }
 .main-nav a.active { color: var(--cream); background: rgba(244,223,180,.04); }
 .header-logout { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; height: 40px; padding: 0 11px; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; color: var(--muted); }
@@ -505,7 +507,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 @media (min-width: 760px) {
   .app-header { height: 74px; padding: 0 30px; }
-  .main-nav { position: static; order: initial; height: 100%; border: 0; background: transparent; padding: 0; }
+  .main-nav--mobile { display: none; }
+  .main-nav--desktop { display: flex; align-self: stretch; height: 100%; }
   .main-nav a { position: relative; flex: initial; padding: 0 16px; font-size: .78rem; }
   .main-nav a.active::after { content: ''; position: absolute; left: 15px; right: 15px; bottom: 0; height: 2px; background: var(--cream); }
   .header-logout span { display: inline; }
