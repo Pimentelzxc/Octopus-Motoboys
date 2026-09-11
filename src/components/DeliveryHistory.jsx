@@ -13,7 +13,7 @@ export default function DeliveryHistory({ deliveries, onEdit, onCancel }) {
   return (
     <>
       <section className="motoboy-section">
-        <div className="section-heading"><div><ReceiptText /><span><p className="eyebrow">Histórico</p><h2>Entregas de hoje</h2></span></div><small>{activeDeliveries.length} registradas</small></div>
+        <div className="section-heading"><div><ReceiptText /><span><p className="eyebrow">Histórico</p><h2>Entregas recentes</h2></span></div><small>{activeDeliveries.length} registradas</small></div>
         {activeDeliveries.length === 0 ? <div className="compact-empty">Suas entregas aparecerão aqui depois do primeiro registro.</div> : (
           <div className="delivery-list">
             {activeDeliveries.map((delivery) => (

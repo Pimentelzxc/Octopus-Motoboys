@@ -107,7 +107,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .brand span { display: grid; line-height: 1.05; }
 .brand strong { letter-spacing: .13em; font-size: .86rem; }
 .brand small { color: var(--muted); font-size: .62rem; margin-top: 5px; }
-.main-nav { display: flex; align-self: stretch; order: 3; position: fixed; z-index: 31; left: 0; right: 0; bottom: 0; height: 64px; border-top: 1px solid var(--border); background: rgba(18,14,16,.97); padding-bottom: env(safe-area-inset-bottom); }
+.main-nav { display: flex; align-self: stretch; order: 3; position: fixed; z-index: 25; left: 0; right: 0; bottom: 0; height: calc(70px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); background: rgba(18,14,16,.97); padding: 5px 4px env(safe-area-inset-bottom); }
 .main-nav a { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: .73rem; font-weight: 700; }
 .main-nav a.active { color: var(--cream); background: rgba(244,223,180,.04); }
 .header-logout { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; height: 40px; padding: 0 11px; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; color: var(--muted); }
@@ -148,6 +148,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .push-settings > span small { color: var(--muted); font-size: .7rem; line-height: 1.45; }
 .push-settings > .button { flex: 0 0 auto; min-height: 40px; }
 .motoboy-info-grid { display: grid; gap: 12px; margin-top: 14px; }
+.profile-settings__button { margin-top: 14px; }
 .info-tile { min-height: 86px; border: 1px solid var(--border); border-radius: 17px; background: var(--surface); padding: 17px; display: flex; align-items: center; gap: 14px; }
 .info-tile > svg { color: var(--cream); padding: 10px; width: 42px; height: 42px; background: rgba(244,223,180,.07); border-radius: 12px; }
 .info-tile span { display: grid; gap: 3px; }
@@ -527,6 +528,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 759px) {
+  .app-header { z-index: 30; }
+  .brand, .header-logout { position: relative; z-index: 2; }
+  .main-nav a { min-width: 0; flex-direction: column; gap: 3px; padding: 4px 2px; font-size: .63rem; line-height: 1; }
+  .main-nav a svg { width: 20px; height: 20px; }
+  .page-container { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
   .push-settings { align-items: flex-start; flex-wrap: wrap; }
   .push-settings > span { width: calc(100% - 62px); }
   .push-settings > .button { width: 100%; }

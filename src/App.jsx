@@ -29,6 +29,9 @@ export default function App() {
       <Route element={<ProtectedRoute allowedRoles={['motoboy']} />}>
         <Route element={<AppShell />}>
           <Route path="/motoboy" element={<MotoboyPage />} />
+          <Route path="/motoboy/historico" element={<MotoboyPage />} />
+          <Route path="/motoboy/financeiro" element={<MotoboyPage />} />
+          <Route path="/motoboy/configuracoes" element={<MotoboyPage />} />
         </Route>
       </Route>
       <Route element={<ProtectedRoute allowedRoles={['kitchen']} />}>

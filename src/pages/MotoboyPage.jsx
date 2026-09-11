@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Bike, Check, Clock3, MapPinned, PackageCheck, Pencil, Plus, Power, ShieldCheck, WalletCards, WifiOff } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
+import { Bike, Check, Clock3, MapPinned, PackageCheck, Pencil, Plus, Power, UserRound, WalletCards, WifiOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import useNow from '../hooks/useNow'
 import useOnlineStatus from '../hooks/useOnlineStatus'
 import { finishDispatchCall, getMyQueuePosition, getOwnAvailability, setMyStatus, subscribeToAvailability, updateLastSeen } from '../services/availabilityService'
-import { cancelOwnDelivery, getMyTodayDeliveries, registerManualDelivery, subscribeToMyDeliveries, summarizeDeliveries, updateOwnDelivery } from '../services/deliveryService'
+import { cancelOwnDelivery, getMyDeliveries, getMyTodayDeliveries, registerManualDelivery, subscribeToMyDeliveries, summarizeDeliveries, updateOwnDelivery } from '../services/deliveryService'
 import { getMyPaymentClosings, subscribeToPayments } from '../services/paymentService'
 import { elapsedTime, formatCurrency, formatDistance } from '../utils/formatters'
 import DeliveryFormModal from '../components/DeliveryFormModal'
@@ -15,6 +16,7 @@ import ProfileEditor from '../components/ProfileEditor'
 import PushNotificationSettings from '../components/PushNotificationSettings'
 
 export default function MotoboyPage() {
+  const location = useLocation()
   const { profile, user, refreshProfile } = useAuth()
   const { showToast } = useToast()
   const online = useOnlineStatus()
@@ -22,6 +24,7 @@ export default function MotoboyPage() {
   const [availability, setAvailability] = useState(null)
   const [queuePosition, setQueuePosition] = useState(null)
   const [deliveries, setDeliveries] = useState([])
+  const [todayDeliveries, setTodayDeliveries] = useState([])
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [changing, setChanging] = useState(false)
@@ -30,8 +33,8 @@ export default function MotoboyPage() {
 
   const loadOperationalData = useCallback(async () => {
     try {
-      const [statusData, position, todayDeliveries] = await Promise.all([getOwnAvailability(user.id), getMyQueuePosition(), getMyTodayDeliveries(user.id)])
-      setAvailability(statusData); setQueuePosition(position); setDeliveries(todayDeliveries)
+      const [statusData, position, today, history] = await Promise.all([getOwnAvailability(user.id), getMyQueuePosition(), getMyTodayDeliveries(user.id), getMyDeliveries(user.id)])
+      setAvailability(statusData); setQueuePosition(position); setTodayDeliveries(today); setDeliveries(history)
     } catch (error) { showToast(`Não foi possível atualizar seus dados: ${error.message}`, 'error') }
     finally { setLoading(false) }
   }, [showToast, user.id])
@@ -61,7 +64,7 @@ export default function MotoboyPage() {
   const status = availability?.status ?? (availability?.is_available ? 'available' : 'offline')
   const available = status === 'available'
   const onDelivery = status === 'on_delivery'
-  const summary = useMemo(() => summarizeDeliveries(deliveries), [deliveries])
+  const summary = useMemo(() => summarizeDeliveries(todayDeliveries), [todayDeliveries])
 
   const changeStatus = async () => {
     if (!online || changing || onDelivery) return
@@ -102,24 +105,45 @@ export default function MotoboyPage() {
   }
 
   const stateClass = onDelivery ? 'status-control--delivery' : available ? 'status-control--available' : 'status-control--unavailable'
+  const section = location.pathname.endsWith('/historico')
+    ? 'history'
+    : location.pathname.endsWith('/financeiro')
+      ? 'finance'
+      : location.pathname.endsWith('/configuracoes')
+        ? 'settings'
+        : 'status'
+  const pageCopy = {
+    status: { eyebrow: 'Área do motoboy', title: `Olá, ${profile.full_name.split(' ')[0]} 👋`, description: 'Controle sua disponibilidade e registre suas entregas.' },
+    history: { eyebrow: 'Suas entregas', title: 'Histórico', description: 'Consulte os pedidos e os valores das suas entregas recentes.' },
+    finance: { eyebrow: 'Seus recebimentos', title: 'Financeiro', description: 'Acompanhe seus fechamentos e pagamentos.' },
+    settings: { eyebrow: 'Sua conta', title: 'Configurações', description: 'Gerencie notificações e suas informações pessoais.' },
+  }[section]
   return (
     <div className="motoboy-page page-container">
-      <header className="page-intro motoboy-intro"><div><p className="eyebrow">Área do motoboy</p><h1>Olá, {profile.full_name.split(' ')[0]} <span aria-hidden="true">👋</span></h1><p>Seu turno, suas entregas e pagamentos em um só lugar.</p></div><button className="button button--subtle" type="button" onClick={() => setEditOpen(true)}><Pencil size={17} /> Meus dados</button></header>
-      <section className={`status-control ${stateClass}`}>
-        <div className="status-glow" /><div className="status-label"><span className="status-dot" /> Status atual</div>
-        <h2>{loading ? 'Consultando...' : onDelivery ? 'Em entrega' : available ? 'Disponível' : 'Indisponível'}</h2>
-        <p className="status-time">{onDelivery ? <><Bike size={18} /> Você foi chamado pela cozinha</> : available ? <><Clock3 size={18} /> #{queuePosition ?? '—'} na fila · há {elapsedTime(availability?.available_since, now)}</> : 'Você não está na fila de entregas.'}</p>
-        {onDelivery ? <button className="availability-button availability-button--finish" type="button" onClick={finishDispatch} disabled={changing || !online}><span className="availability-button__icon">{changing ? <span className="button-spinner" /> : <PackageCheck />}</span><span><small>CORRIDA EM ANDAMENTO</small>{changing ? 'Finalizando...' : 'Finalizar e voltar à fila'}</span></button> : <button className="availability-button" type="button" onClick={changeStatus} disabled={loading || changing || !online}><span className="availability-button__icon">{changing ? <span className="button-spinner" /> : available ? <Power /> : <Check />}</span><span><small>{available ? 'ENCERRAR TURNO' : 'PRONTO PARA ENTREGAR?'}</small>{changing ? 'Alterando status...' : available ? 'Ficar indisponível' : 'Ficar disponível'}</span></button>}
-        {!online && <div className="inline-offline"><WifiOff size={17} /> Reconecte-se para continuar.</div>}
-      </section>
-      <PushNotificationSettings />
-      <section className="today-summary">
-        <div className="today-summary__head"><span><p className="eyebrow">Hoje</p><h2>Seu movimento</h2></span><button type="button" className="button button--register" onClick={() => setDeliveryMode('manual')} disabled={onDelivery || !online}><Plus size={19} /> Registrar entrega</button></div>
-        <div className="summary-grid"><div><PackageCheck /><span><small>Entregas</small><strong>{summary.count}</strong></span></div><div><MapPinned /><span><small>Quilometragem</small><strong>{formatDistance(summary.distance)}</strong></span></div><div><WalletCards /><span><small>Valor</small><strong>{formatCurrency(summary.amount)}</strong>{summary.pending > 0 && <em>{summary.pending} pendente</em>}</span></div></div>
-      </section>
-      <DeliveryHistory deliveries={deliveries} onEdit={editDelivery} onCancel={cancelDelivery} />
-      <PaymentHistory payments={payments} />
-      <div className="motoboy-info-grid"><div className="info-tile"><Bike /><span><small>Moto cadastrada</small><strong>{profile.motorcycle_model || 'Não informada'}</strong></span></div><div className="info-tile"><ShieldCheck /><span><small>Operação</small><strong>{onDelivery ? 'Em rota de entrega' : available ? 'Aguardando chamada' : 'Fora da fila'}</strong></span></div></div>
+      <header className="page-intro motoboy-intro"><div><p className="eyebrow">{pageCopy.eyebrow}</p><h1>{pageCopy.title}</h1><p>{pageCopy.description}</p></div></header>
+      {section === 'status' && <>
+        <section className={`status-control ${stateClass}`}>
+          <div className="status-glow" /><div className="status-label"><span className="status-dot" /> Status atual</div>
+          <h2>{loading ? 'Consultando...' : onDelivery ? 'Em entrega' : available ? 'Disponível' : 'Indisponível'}</h2>
+          <p className="status-time">{onDelivery ? <><Bike size={18} /> Você foi chamado pela cozinha</> : available ? <><Clock3 size={18} /> #{queuePosition ?? '—'} na fila · há {elapsedTime(availability?.available_since, now)}</> : 'Você não está na fila de entregas.'}</p>
+          {onDelivery ? <button className="availability-button availability-button--finish" type="button" onClick={finishDispatch} disabled={changing || !online}><span className="availability-button__icon">{changing ? <span className="button-spinner" /> : <PackageCheck />}</span><span><small>CORRIDA EM ANDAMENTO</small>{changing ? 'Finalizando...' : 'Finalizar e voltar à fila'}</span></button> : <button className="availability-button" type="button" onClick={changeStatus} disabled={loading || changing || !online}><span className="availability-button__icon">{changing ? <span className="button-spinner" /> : available ? <Power /> : <Check />}</span><span><small>{available ? 'ENCERRAR TURNO' : 'PRONTO PARA ENTREGAR?'}</small>{changing ? 'Alterando status...' : available ? 'Ficar indisponível' : 'Ficar disponível'}</span></button>}
+          {!online && <div className="inline-offline"><WifiOff size={17} /> Reconecte-se para continuar.</div>}
+        </section>
+        <section className="today-summary">
+          <div className="today-summary__head"><span><p className="eyebrow">Hoje</p><h2>Seu movimento</h2></span><button type="button" className="button button--register" onClick={() => setDeliveryMode('manual')} disabled={onDelivery || !online}><Plus size={19} /> Registrar entrega</button></div>
+          <div className="summary-grid"><div><PackageCheck /><span><small>Entregas</small><strong>{summary.count}</strong></span></div><div><MapPinned /><span><small>Quilometragem</small><strong>{formatDistance(summary.distance)}</strong></span></div><div><WalletCards /><span><small>Valor</small><strong>{formatCurrency(summary.amount)}</strong>{summary.pending > 0 && <em>{summary.pending} pendente</em>}</span></div></div>
+        </section>
+      </>}
+      {section === 'history' && <DeliveryHistory deliveries={deliveries} onEdit={editDelivery} onCancel={cancelDelivery} />}
+      {section === 'finance' && <PaymentHistory payments={payments} />}
+      {section === 'settings' && <>
+        <PushNotificationSettings />
+        <section className="motoboy-section profile-settings">
+          <div className="section-heading"><div><UserRound /><span><p className="eyebrow">Cadastro</p><h2>Minhas informações</h2></span></div></div>
+          <div className="motoboy-info-grid"><div className="info-tile"><UserRound /><span><small>Nome</small><strong>{profile.full_name}</strong></span></div><div className="info-tile"><Bike /><span><small>Moto cadastrada</small><strong>{profile.motorcycle_model || 'Não informada'}</strong></span></div></div>
+          <button className="button button--primary button--full profile-settings__button" type="button" onClick={() => setEditOpen(true)}><Pencil size={17} /> Alterar minhas informações</button>
+        </section>
+      </>}
       <ProfileEditor open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSaved={refreshProfile} />
       <DeliveryFormModal open={deliveryMode === 'manual'} mode="manual" onClose={() => setDeliveryMode(null)} onSubmit={submitDelivery} />
     </div>

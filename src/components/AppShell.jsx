@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { Bike, ChefHat, LayoutDashboard, LogOut } from 'lucide-react'
+import { Bike, ChefHat, History, LayoutDashboard, LogOut, Settings, WalletCards } from 'lucide-react'
 import { brand } from '../config/brand'
 import { useAuth } from '../contexts/AuthContext'
 import OfflineBanner from './OfflineBanner'
@@ -20,7 +20,12 @@ export default function AppShell() {
           <span><strong>{brand.name}</strong><small>{brand.product}</small></span>
         </a>
         <nav className="main-nav" aria-label="Navegação principal">
-          {profile?.role === 'motoboy' && <NavLink to="/motoboy"><Bike size={18} /> Meu status</NavLink>}
+          {profile?.role === 'motoboy' && <>
+            <NavLink to="/motoboy" end><Bike size={18} /> Status</NavLink>
+            <NavLink to="/motoboy/historico"><History size={18} /> Histórico</NavLink>
+            <NavLink to="/motoboy/financeiro"><WalletCards size={18} /> Financeiro</NavLink>
+            <NavLink to="/motoboy/configuracoes"><Settings size={18} /> Configurações</NavLink>
+          </>}
           {profile?.role === 'kitchen' && <NavLink to="/cozinha"><ChefHat size={18} /> Cozinha</NavLink>}
           {profile?.role === 'admin' && <NavLink to="/admin"><LayoutDashboard size={18} /> Administração</NavLink>}
         </nav>
