@@ -12,6 +12,7 @@ import DeliveryFormModal from '../components/DeliveryFormModal'
 import DeliveryHistory from '../components/DeliveryHistory'
 import PaymentHistory from '../components/PaymentHistory'
 import ProfileEditor from '../components/ProfileEditor'
+import PushNotificationSettings from '../components/PushNotificationSettings'
 
 export default function MotoboyPage() {
   const { profile, user, refreshProfile } = useAuth()
@@ -103,6 +104,7 @@ export default function MotoboyPage() {
         {onDelivery ? <button className="availability-button availability-button--finish" type="button" onClick={() => { setSelectedActiveDelivery(activeDeliveries[0] ?? null); setDeliveryMode('finish') }} disabled={!online}><span className="availability-button__icon"><PackageCheck /></span><span><small>{activeDeliveries.length > 1 ? `${activeDeliveries.length} PEDIDOS EM ANDAMENTO` : 'CORRIDA EM ANDAMENTO'}</small>{activeDeliveries.length > 1 ? `Finalizar #${activeDeliveries[0]?.order_number}` : 'Finalizar entrega'}</span></button> : <button className="availability-button" type="button" onClick={changeStatus} disabled={loading || changing || !online}><span className="availability-button__icon">{changing ? <span className="button-spinner" /> : available ? <Power /> : <Check />}</span><span><small>{available ? 'ENCERRAR TURNO' : 'PRONTO PARA ENTREGAR?'}</small>{changing ? 'Alterando status...' : available ? 'Ficar indisponível' : 'Ficar disponível'}</span></button>}
         {!online && <div className="inline-offline"><WifiOff size={17} /> Reconecte-se para continuar.</div>}
       </section>
+      <PushNotificationSettings />
       <section className="today-summary">
         <div className="today-summary__head"><span><p className="eyebrow">Hoje</p><h2>Seu movimento</h2></span><button type="button" className="button button--register" onClick={() => setDeliveryMode('manual')} disabled={onDelivery || !online}><Plus size={19} /> Registrar entrega</button></div>
         <div className="summary-grid"><div><PackageCheck /><span><small>Entregas</small><strong>{summary.count}</strong></span></div><div><MapPinned /><span><small>Quilometragem</small><strong>{formatDistance(summary.distance)}</strong></span></div><div><WalletCards /><span><small>Valor</small><strong>{formatCurrency(summary.amount)}</strong>{summary.pending > 0 && <em>{summary.pending} pendente</em>}</span></div></div>

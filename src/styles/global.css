@@ -145,6 +145,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .availability-button span:last-child { display: grid; font-family: 'Manrope', sans-serif; font-size: 1.17rem; font-weight: 800; }
 .availability-button small { color: rgba(255,255,255,.63); font-size: .61rem; letter-spacing: .14em; margin-bottom: 4px; }
 .inline-offline { position: relative; z-index: 1; color: #ffd28c; margin-top: 12px; font-size: .78rem; display: flex; align-items: center; gap: 7px; }
+.push-settings { margin-top: 14px; min-height: 88px; display: flex; align-items: center; gap: 13px; padding: 15px 17px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.push-settings__icon { flex: 0 0 44px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px; color: var(--cream); background: rgba(244,223,180,.07); }
+.push-settings--enabled { border-color: rgba(41,207,136,.22); }
+.push-settings--enabled .push-settings__icon { color: #91f3c8; background: rgba(41,207,136,.09); }
+.push-settings > span { min-width: 0; display: grid; gap: 3px; margin-right: auto; }
+.push-settings > span strong { font-size: .86rem; }
+.push-settings > span small { color: var(--muted); font-size: .7rem; line-height: 1.45; }
+.push-settings > .button { flex: 0 0 auto; min-height: 40px; }
 .motoboy-info-grid { display: grid; gap: 12px; margin-top: 14px; }
 .info-tile { min-height: 86px; border: 1px solid var(--border); border-radius: 17px; background: var(--surface); padding: 17px; display: flex; align-items: center; gap: 14px; }
 .info-tile > svg { color: var(--cream); padding: 10px; width: 42px; height: 42px; background: rgba(244,223,180,.07); border-radius: 12px; }
@@ -243,21 +251,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .kitchen-today small { color: var(--muted); font-size: .61rem; }
 .kitchen-today strong { font-size: .84rem; }
 .button--dispatch { margin-top: 9px; min-height: 49px; background: linear-gradient(135deg, #9b2347, #661129); }
-.dispatch-form { display: grid; gap: 17px; }
-.dispatch-person { display: flex; align-items: center; gap: 11px; padding: 13px; border-radius: 13px; background: #100d0e; }
-.dispatch-person > svg { color: var(--cream); }
-.dispatch-person span { display: grid; }
-.dispatch-person small { color: var(--muted); font-size: .65rem; }
-.order-add-button { width: 38px; height: 38px; flex: 0 0 38px; display: grid; place-items: center; border: 0; border-radius: 10px; background: var(--cream); color: #2a1118; cursor: pointer; }
-.order-add-button:disabled { opacity: .4; cursor: not-allowed; }
-.order-add-button svg { width: 18px; }
-.dispatch-orders { display: grid; gap: 9px; padding: 12px; border: 1px solid var(--border); border-radius: 13px; background: #100d0e; }
-.dispatch-orders > div { display: flex; justify-content: space-between; color: var(--muted); font-size: .67rem; }
-.dispatch-orders > div strong { color: var(--cream); }
-.dispatch-orders ul { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; padding: 0; list-style: none; }
-.dispatch-orders li { display: flex; align-items: center; gap: 5px; padding: 6px 7px 6px 10px; border-radius: 999px; background: rgba(244,223,180,.08); color: var(--cream); font-size: .72rem; }
-.dispatch-orders li button { width: 23px; height: 23px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255,255,255,.06); color: var(--muted); cursor: pointer; }
-.dispatch-orders li button svg { width: 13px; }
 
 /* Operations and payments admin */
 .admin-section-tabs { display: flex; gap: 7px; margin-bottom: 18px; padding: 5px; width: fit-content; max-width: 100%; border: 1px solid var(--border); background: var(--surface); border-radius: 14px; }
@@ -545,6 +538,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 759px) {
+  .push-settings { align-items: flex-start; flex-wrap: wrap; }
+  .push-settings > span { width: calc(100% - 62px); }
+  .push-settings > .button { width: 100%; }
   .user-table, .user-table tbody, .user-table tr, .user-table td { display: block; }
   .user-table thead { display: none; }
   .user-table tr { position: relative; padding: 14px; margin-top: 12px; border: 1px solid var(--border); border-radius: 15px; background: #120f10; }

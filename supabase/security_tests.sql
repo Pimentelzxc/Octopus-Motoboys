@@ -21,7 +21,7 @@ begin
   end if;
 
   queue_definition := pg_get_functiondef('public.get_kitchen_queue()'::regprocedure);
-  dispatch_definition := pg_get_functiondef('public.dispatch_motoboy(uuid,text[])'::regprocedure);
+  dispatch_definition := pg_get_functiondef('public.dispatch_motoboy(uuid)'::regprocedure);
 
   if position('public.is_kitchen()' in queue_definition) = 0 then
     raise exception 'get_kitchen_queue não exige o perfil kitchen';
@@ -31,12 +31,23 @@ begin
     raise exception 'dispatch_motoboy não exige o perfil kitchen';
   end if;
 
-  if to_regprocedure('public.dispatch_motoboy(uuid,text[])') is null then
-    raise exception 'A função de despacho em lote não foi instalada';
+  if to_regprocedure('public.dispatch_motoboy(uuid)') is null then
+    raise exception 'A função de chamada simples não foi instalada';
   end if;
 
-  if to_regclass('public.deliveries_one_active_per_motoboy') is not null then
-    raise exception 'O índice antigo ainda limita o motoboy a um único pedido';
+  if to_regprocedure('public.dispatch_motoboy(uuid,text[])') is not null
+    or to_regprocedure('public.dispatch_motoboy(uuid,text)') is not null then
+    raise exception 'Uma função antiga ainda permite à cozinha despachar pedidos';
+  end if;
+
+  if position('insert into public.deliveries' in lower(dispatch_definition)) > 0 then
+    raise exception 'A chamada simples ainda cria pedidos pela cozinha';
+  end if;
+
+  if to_regclass('public.push_subscriptions') is null
+    or to_regprocedure('public.save_my_push_subscription(text,text,text,text)') is null
+    or to_regprocedure('public.delete_my_push_subscription(text)') is null then
+    raise exception 'A estrutura segura de assinaturas Web Push não foi instalada';
   end if;
 
   if not exists (

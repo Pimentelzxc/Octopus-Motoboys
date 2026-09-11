@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Bike, ChefHat, Clock3, MessageCircle, Navigation, RefreshCw, TimerReset, UsersRound } from 'lucide-react'
 import EmptyState from '../components/EmptyState'
-import DispatchModal from '../components/DispatchModal'
 import { useToast } from '../contexts/ToastContext'
 import useNow from '../hooks/useNow'
 import useOnlineStatus from '../hooks/useOnlineStatus'
@@ -16,7 +15,6 @@ export default function KitchenPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [dispatching, setDispatching] = useState(null)
-  const [selectedDispatch, setSelectedDispatch] = useState(null)
 
   const load = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true)
@@ -50,9 +48,14 @@ export default function KitchenPage() {
   }, [online, load])
 
   const currentTime = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(now)
-  const callMotoboy = async (person, orderNumbers) => {
+  const callMotoboy = async (person) => {
     setDispatching(person.user_id)
-    try { await dispatchMotoboy(person.user_id, orderNumbers); const count = orderNumbers.length; showToast(`${person.full_name} foi chamado${count === 1 ? ` para o pedido #${orderNumbers[0]}` : count > 1 ? ` com ${count} pedidos` : ' para entrega'}.`); setSelectedDispatch(null); await load() }
+    try {
+      const { notification } = await dispatchMotoboy(person.user_id)
+      if (notification?.sent > 0) showToast(`${person.full_name} foi chamado e recebeu a notificação.`)
+      else showToast(`${person.full_name} foi chamado, mas o push não foi entregue: ${notification?.message || 'nenhum aparelho cadastrado'}.`, 'info')
+      await load()
+    }
     catch (error) { showToast(`Não foi possível chamar: ${error.message}`, 'error') }
     finally { setDispatching(null) }
   }
@@ -100,13 +103,12 @@ export default function KitchenPage() {
                 <div className="kitchen-today"><span><small>Entregas hoje</small><strong>{item.deliveries_today}</strong></span><span><small>KM hoje</small><strong>{Number(item.distance_today || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} km</strong></span></div>
                 {stale && <div className="stale-warning">⚠ Sem atividade há {person.last_seen ? elapsedTime(person.last_seen, now) : 'algum tempo'}</div>}
                 <a className="whatsapp-link" href={whatsappUrl(person.phone)} target="_blank" rel="noreferrer"><MessageCircle size={19} /><span><small>Chamar no WhatsApp</small>{formatPhone(person.phone)}</span></a>
-                <button type="button" className="button button--dispatch button--full" onClick={() => setSelectedDispatch(person)} disabled={dispatching === person.user_id}><Navigation size={18} />{dispatching === person.user_id ? 'Chamando...' : index === 0 ? 'Chamar próximo motoboy' : 'Chamar motoboy'}</button>
+                <button type="button" className="button button--dispatch button--full" onClick={() => callMotoboy(person)} disabled={Boolean(dispatching)}><Navigation size={18} />{dispatching === person.user_id ? 'Chamando...' : index === 0 ? 'Chamar próximo motoboy' : 'Chamar motoboy'}</button>
               </article>
             )
           })}
         </div>
       )}
-      <DispatchModal motoboy={selectedDispatch} open={Boolean(selectedDispatch)} busy={Boolean(dispatching)} onClose={() => setSelectedDispatch(null)} onConfirm={(orders) => callMotoboy(selectedDispatch, orders)} />
     </div>
   )
 }

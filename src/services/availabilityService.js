@@ -1,5 +1,5 @@
 import { requireSupabase } from '../lib/supabase'
-import { normalizeOrderNumber } from '../utils/orderNumber'
+import { sendDispatchPush } from './pushNotificationService'
 
 const AVAILABLE_SELECT = `
   id,
@@ -53,12 +53,20 @@ export async function getKitchenQueue() {
   return data ?? []
 }
 
-export async function dispatchMotoboy(userId, orderNumbers = []) {
+export async function dispatchMotoboy(userId) {
   const client = requireSupabase()
-  const normalizedOrders = orderNumbers.map(normalizeOrderNumber).filter(Boolean)
-  const { data, error } = await client.rpc('dispatch_motoboy', { target_motoboy_id: userId, delivery_order_numbers: normalizedOrders })
+  const { data, error } = await client.rpc('dispatch_motoboy', { target_motoboy_id: userId })
   if (error) throw error
-  return data
+
+  try {
+    const notification = await sendDispatchPush(userId)
+    return { availability: data, notification }
+  } catch (pushError) {
+    return {
+      availability: data,
+      notification: { sent: 0, failed: 1, message: pushError.message || 'Falha ao enviar o push' },
+    }
+  }
 }
 
 export async function getAvailableMotoboys() {

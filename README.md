@@ -8,7 +8,7 @@ Sistema web mobile-first para controlar disponibilidade, fila, entregas e pagame
 - Redirecionamento por função: `motoboy`, `kitchen` ou `admin`.
 - Áreas de cozinha e administração estritamente separadas no frontend e nas funções protegidas do banco.
 - Status `offline`, `available` e `on_delivery`, tempo de espera e heartbeat de atividade.
-- Painel da cozinha em tempo real, fila ordenada por `available_since` crescente, despacho e resumo diário sem dados financeiros.
+- Painel da cozinha em tempo real, fila ordenada por `available_since` crescente, chamada simples com Web Push e resumo diário sem dados financeiros.
 - Registro manual ou por despacho, correção/cancelamento lógico em até 10 minutos e histórico diário.
 - Número de pedido obrigatório, preservando zeros à esquerda, com prevenção de duplicidade por data operacional.
 - Precificação oficial no PostgreSQL, inclusive tratamento de valores pendentes acima de 13 km.
@@ -18,6 +18,7 @@ Sistema web mobile-first para controlar disponibilidade, fila, entregas e pagame
 - Painel administrativo com busca, filtros, edição, ativação/desativação, mudança de função e exclusão segura.
 - Segurança no banco com RLS, privilégios por coluna e RPCs administrativas verificando o admin no servidor.
 - PWA com manifest, service worker e atualização automática.
+- Web Push no iPhone e Android para avisar o motoboy quando a cozinha o chamar.
 - Tratamento de loading, falhas, perda de conexão e retorno da rede.
 
 ## Arquitetura da disponibilidade
@@ -40,7 +41,7 @@ O motoboy pode registrar uma entrega manualmente ou finalizar uma corrida inicia
 
 `deliveries.order_number` é `TEXT NOT NULL`, portanto `001` nunca vira `1`. A normalização remove espaços externos/internos e converte letras para maiúsculas sem remover zeros. A combinação `order_number + operational_date` é única para entregas não canceladas: o mesmo número pode reaparecer em outro dia, mas não pode ser registrado duas vezes no mesmo dia.
 
-A cozinha pode informar até 20 pedidos ao chamar um motoboy. Cada entrega `in_progress` reserva seu número imediatamente; no painel do motoboy, ele escolhe e finaliza cada pedido separadamente com sua própria quilometragem. O motoboy permanece `on_delivery` até concluir o último pedido do lote. Sem número no despacho, ele informa o pedido junto com o KM. Registros manuais nascem diretamente como `completed`.
+A cozinha apenas chama o motoboy, sem cadastrar ou reservar pedidos. Ao finalizar a corrida, o próprio motoboy informa o número do pedido e a quilometragem. Registros manuais nascem diretamente como `completed`.
 
 | Distância                   |                   Valor |
 | ---------------------------- | ----------------------: |
@@ -81,6 +82,7 @@ No macOS/Linux, use `cp .env.example .env`.
 ```env
 VITE_SUPABASE_URL=https://SEU-ID.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_SUA_CHAVE_PUBLICA
+VITE_WEB_PUSH_VAPID_PUBLIC_KEY=SUA_CHAVE_PUBLICA_VAPID
 ```
 
 Nunca use uma chave `sb_secret_...` ou `service_role` no frontend. Elas ignoram RLS e pertencem exclusivamente a ambientes seguros de servidor.
@@ -103,6 +105,21 @@ O `schema.sql` habilita RLS, cria todas as policies e adiciona `profiles`, `avai
 Motoboys não têm permissão SQL direta para definir valores: cadastro, correção em até 10 minutos e cancelamento passam por RPCs restritas. A cozinha recebe somente os campos operacionais através de `get_kitchen_queue`, sem valores financeiros. Funções administrativas verificam `is_admin()` no banco. As ações financeiras relevantes geram registros em `audit_logs`.
 
 Cada conta possui uma única função. A conta `kitchen` acessa somente `/cozinha` e as RPCs de fila/despacho; a conta `admin` acessa somente `/admin`. Uma tentativa de abrir a rota da outra função é redirecionada, e o banco repete a verificação independentemente do frontend.
+
+### Notificações Web Push
+
+Gere uma vez o par de chaves VAPID:
+
+```bash
+npm run generate:vapid
+```
+
+- Cadastre a chave pública como `VITE_WEB_PUSH_VAPID_PUBLIC_KEY` no `.env` local e nas variáveis da Vercel.
+- No Supabase, abra **Edge Functions > Secrets** e cadastre `WEB_PUSH_VAPID_PUBLIC_KEY`, `WEB_PUSH_VAPID_PRIVATE_KEY` e `WEB_PUSH_VAPID_SUBJECT` (por exemplo, `mailto:seu-email@dominio.com`).
+- Publique `supabase/functions/send-dispatch-push/index.ts` como uma Edge Function chamada `send-dispatch-push`.
+- A chave privada nunca deve receber o prefixo `VITE_` nem ser cadastrada na Vercel.
+
+No Android, instale o PWA e toque em **Ativar notificações** na área do motoboy. No iPhone com iOS 16.4 ou mais recente, primeiro use **Compartilhar > Adicionar à Tela de Início**, abra a Octopus pelo ícone instalado e então ative as notificações. O sistema solicita permissão somente após esse toque.
 
 ## 3. Criar o primeiro administrador
 
@@ -147,7 +164,7 @@ Para testar o Realtime, abra uma sessão de motoboy no celular/janela anônima e
 
 1. Envie o projeto para um repositório Git e importe-o na Vercel.
 2. A Vercel detectará Vite. O comando de build é `npm run build` e a pasta de saída é `dist`.
-3. Em **Project Settings > Environment Variables**, cadastre `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` para Production (e Preview, se desejar).
+3. Em **Project Settings > Environment Variables**, cadastre `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e `VITE_WEB_PUSH_VAPID_PUBLIC_KEY` para Production (e Preview, se desejar).
 4. Faça um novo deploy após cadastrar as variáveis.
 5. Adicione o domínio final às Redirect URLs do Supabase.
 
