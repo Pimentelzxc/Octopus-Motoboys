@@ -116,7 +116,7 @@ npm run generate:vapid
 
 - Cadastre a chave pública como `VITE_WEB_PUSH_VAPID_PUBLIC_KEY` no `.env` local e nas variáveis da Vercel.
 - No Supabase, abra **Edge Functions > Secrets** e cadastre `WEB_PUSH_VAPID_PUBLIC_KEY`, `WEB_PUSH_VAPID_PRIVATE_KEY` e `WEB_PUSH_VAPID_SUBJECT` (por exemplo, `mailto:seu-email@dominio.com`).
-- Publique `supabase/functions/send-dispatch-push/index.ts` como uma Edge Function chamada `send-dispatch-push`.
+- Publique `supabase/functions/swift-function/index.ts` como uma Edge Function chamada `swift-function`.
 - A chave privada nunca deve receber o prefixo `VITE_` nem ser cadastrada na Vercel.
 
 No Android, instale o PWA e toque em **Ativar notificações** na área do motoboy. No iPhone com iOS 16.4 ou mais recente, primeiro use **Compartilhar > Adicionar à Tela de Início**, abra a Octopus pelo ícone instalado e então ative as notificações. O sistema solicita permissão somente após esse toque.

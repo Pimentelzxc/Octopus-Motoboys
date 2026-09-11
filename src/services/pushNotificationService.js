@@ -87,7 +87,7 @@ export async function disablePushNotifications() {
 
 export async function sendDispatchPush(targetUserId) {
   const client = requireSupabase()
-  const { data, error } = await client.functions.invoke('send-dispatch-push', {
+  const { data, error } = await client.functions.invoke('swift-function', {
     body: { targetUserId },
   })
   if (error) throw error
