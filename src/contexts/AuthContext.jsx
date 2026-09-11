@@ -74,26 +74,6 @@ export function AuthProvider({ children }) {
     return userProfile
   }, [fetchProfile])
 
-  const signUp = useCallback(async (form) => {
-    setAuthError(null)
-    const client = requireSupabase()
-    const { data, error } = await client.auth.signUp({
-      email: form.email.trim(),
-      password: form.password,
-      options: {
-        data: {
-          full_name: form.fullName.trim(),
-          username: form.username.trim().toLowerCase(),
-          phone: form.phone.trim(),
-          motorcycle_model: form.motorcycleModel.trim() || null,
-          motorcycle_plate: form.motorcyclePlate.trim().toUpperCase() || null,
-        },
-      },
-    })
-    if (error) throw error
-    return data
-  }, [])
-
   const signOut = useCallback(async () => {
     if (supabase) await supabase.auth.signOut()
     setProfile(null)
@@ -114,10 +94,9 @@ export function AuthProvider({ children }) {
     configurationError: supabaseConfigurationError,
     configured: isSupabaseConfigured,
     signIn,
-    signUp,
     signOut,
     refreshProfile,
-  }), [session, profile, loading, authError, signIn, signUp, signOut, refreshProfile])
+  }), [session, profile, loading, authError, signIn, signOut, refreshProfile])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

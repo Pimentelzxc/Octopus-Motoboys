@@ -38,7 +38,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthLayout eyebrow="Acesso à operação" title="Bem-vindo de volta" subtitle="Entre para atualizar seu status ou acompanhar a equipe." footerText="Ainda não tem uma conta?" footerLink="/cadastro" footerLabel="Cadastre-se">
+    <AuthLayout eyebrow="Acesso à operação" title="Bem-vindo de volta" subtitle="Entre para atualizar seu status ou acompanhar a equipe." footerText="Novos acessos são cadastrados pelo administrador.">
       {!configured && <div className="config-alert">{configurationError ?? <>Configure <code>VITE_SUPABASE_URL</code> e <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> no arquivo <code>.env</code>.</>}</div>}
       {error && <div className="form-alert" role="alert">{error}</div>}
       <form className="auth-form" onSubmit={submit}>

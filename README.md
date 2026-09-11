@@ -96,13 +96,13 @@ Em **Authentication > URL Configuration**:
 - Site URL local: `http://localhost:5173`
 - Redirect URLs: adicione `http://localhost:5173/**` e, depois do deploy, `https://seu-dominio.vercel.app/**`.
 
-Se **Confirm email** estiver habilitado, o novo usuário precisará confirmar o e-mail antes do primeiro acesso. Para testes locais, essa opção pode ser desabilitada em **Authentication > Providers > Email**.
+Em **Authentication > General Configuration**, desative **Allow new users to sign up**. Assim, o endpoint público de cadastro fica bloqueado e somente a Edge Function administrativa pode criar usuários.
 
 ### RLS e Realtime
 
 O `schema.sql` habilita RLS, cria todas as policies e adiciona `profiles`, `availability`, `deliveries`, `payment_closings` e `delivery_activity` à publication `supabase_realtime`. `delivery_activity` é um canal sem dados financeiros usado para atualizar os totais da cozinha. Confirme em **Database > Publications** que essas tabelas aparecem em `supabase_realtime`.
 
-Motoboys não têm permissão SQL direta para definir valores: cadastro, correção em até 10 minutos e cancelamento passam por RPCs restritas. A cozinha recebe somente os campos operacionais através de `get_kitchen_queue`, sem valores financeiros. Funções administrativas verificam `is_admin()` no banco. As ações financeiras relevantes geram registros em `audit_logs`.
+Motoboys não têm permissão SQL direta para definir valores: registro, correção e exclusão em até 10 minutos passam por RPCs restritas. A cozinha recebe somente os campos operacionais através de `get_kitchen_queue`, sem valores financeiros. Funções administrativas verificam `is_admin()` no banco. As ações financeiras relevantes geram registros em `audit_logs`.
 
 Cada conta possui uma única função. A conta `kitchen` acessa somente `/cozinha` e as RPCs de fila/despacho; a conta `admin` acessa somente `/admin`. Uma tentativa de abrir a rota da outra função é redirecionada, e o banco repete a verificação independentemente do frontend.
 
@@ -117,22 +117,26 @@ npm run generate:vapid
 - Cadastre a chave pública como `VITE_WEB_PUSH_VAPID_PUBLIC_KEY` no `.env` local e nas variáveis da Vercel.
 - No Supabase, abra **Edge Functions > Secrets** e cadastre `WEB_PUSH_VAPID_PUBLIC_KEY`, `WEB_PUSH_VAPID_PRIVATE_KEY` e `WEB_PUSH_VAPID_SUBJECT` (por exemplo, `mailto:seu-email@dominio.com`).
 - Publique `supabase/functions/swift-function/index.ts` como uma Edge Function chamada `swift-function`.
+- Publique `supabase/functions/admin-create-user/index.ts` como uma segunda Edge Function chamada `admin-create-user`. Ela usa a chave de serviço somente no servidor e confirma que o solicitante é administrador.
 - A chave privada nunca deve receber o prefixo `VITE_` nem ser cadastrada na Vercel.
 
 No Android, instale o PWA e toque em **Ativar notificações** na área do motoboy. No iPhone com iOS 16.4 ou mais recente, primeiro use **Compartilhar > Adicionar à Tela de Início**, abra a Octopus pelo ícone instalado e então ative as notificações. O sistema solicita permissão somente após esse toque.
 
 ## 3. Criar o primeiro administrador
 
-1. Cadastre a conta normalmente pela tela `/cadastro`.
-2. No SQL Editor do Supabase, promova somente essa conta, usando o e-mail correto:
+1. Antes de bloquear cadastros públicos, crie a primeira conta em **Authentication > Users > Add user** no Dashboard do Supabase.
+2. No SQL Editor do Supabase, complete os dados e promova somente essa conta, usando o e-mail correto:
 
 ```sql
 update public.profiles
-set role = 'admin'
+set role = 'admin',
+    full_name = 'Administrador',
+    username = 'administrador',
+    phone = '(00) 00000-0000'
 where email = 'seu-email@exemplo.com';
 ```
 
-Saia e entre novamente. A partir daí, novos admins e usuários de cozinha podem ser definidos em `/admin`. O formulário público nunca aceita um papel privilegiado.
+Saia e entre novamente. Publique a função `admin-create-user` e desative **Allow new users to sign up**. A partir daí, todos os usuários são cadastrados exclusivamente pelo painel `/admin`.
 
 ## 4. Executar e validar
 
@@ -179,7 +183,7 @@ src/
   contexts/     autenticação e notificações
   hooks/        relógio e estado de conexão
   lib/          cliente Supabase
-  pages/        login, cadastro, motoboy, cozinha e admin
+  pages/        login, motoboy, cozinha e admin
   services/     disponibilidade, entregas, preços, relatórios e pagamentos
   styles/       sistema visual responsivo
   utils/        formatação de tempo, telefone e funções

@@ -6,7 +6,6 @@ import AppShell from './components/AppShell'
 import LoadingScreen from './components/LoadingScreen'
 
 const LoginPage = lazy(() => import('./pages/LoginPage'))
-const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const MotoboyPage = lazy(() => import('./pages/MotoboyPage'))
 const KitchenPage = lazy(() => import('./pages/KitchenPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
@@ -25,7 +24,7 @@ export default function App() {
     <Suspense fallback={<LoadingScreen />}><Routes>
       <Route path="/" element={<HomeRedirect />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/cadastro" element={<RegisterPage />} />
+      <Route path="/cadastro" element={<Navigate to="/login" replace />} />
       <Route element={<ProtectedRoute allowedRoles={['motoboy']} />}>
         <Route element={<AppShell />}>
           <Route path="/motoboy" element={<MotoboyPage />} />

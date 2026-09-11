@@ -21,7 +21,7 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footerT
           <h2>{title}</h2>
           <p className="auth-subtitle">{subtitle}</p>
           {children}
-          <p className="auth-footer">{footerText} <Link to={footerLink}>{footerLabel}</Link></p>
+          {footerText && <p className="auth-footer">{footerText}{footerLink && footerLabel && <> <Link to={footerLink}>{footerLabel}</Link></>}</p>}
         </div>
       </section>
     </main>
