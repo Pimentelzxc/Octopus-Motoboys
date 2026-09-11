@@ -8,7 +8,7 @@ Sistema web mobile-first para controlar disponibilidade, fila, entregas e pagame
 - Redirecionamento por função: `motoboy`, `kitchen` ou `admin`.
 - Áreas de cozinha e administração estritamente separadas no frontend e nas funções protegidas do banco.
 - Status `offline`, `available` e `on_delivery`, tempo de espera e heartbeat de atividade.
-- Painel da cozinha em tempo real, fila ordenada por `available_since` crescente, chamada simples com Web Push e resumo diário sem dados financeiros.
+- Painel da cozinha em tempo real, fila ordenada por `available_since` crescente, chamada simples com Web Push, abertura do WhatsApp com mensagem pronta e resumo diário sem dados financeiros.
 - Registro manual ou por despacho, correção/cancelamento lógico em até 10 minutos e histórico diário.
 - Número de pedido obrigatório, preservando zeros à esquerda, com prevenção de duplicidade por data operacional.
 - Precificação oficial no PostgreSQL, inclusive tratamento de valores pendentes acima de 13 km.

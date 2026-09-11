@@ -49,14 +49,25 @@ export default function KitchenPage() {
 
   const currentTime = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(now)
   const callMotoboy = async (person) => {
+    const firstName = person.full_name.trim().split(/\s+/)[0]
+    const message = `Olá, ${firstName}! A cozinha da Octopus chamou você para uma entrega. Por favor, confirme o recebimento.`
+    const whatsappTab = window.open('about:blank', '_blank')
     setDispatching(person.user_id)
     try {
       const { notification } = await dispatchMotoboy(person.user_id)
-      if (notification?.sent > 0) showToast(`${person.full_name} foi chamado e recebeu a notificação.`)
-      else showToast(`${person.full_name} foi chamado, mas o push não foi entregue: ${notification?.message || 'nenhum aparelho cadastrado'}.`, 'info')
+      if (whatsappTab) {
+        whatsappTab.location.replace(whatsappUrl(person.phone, message))
+        try { whatsappTab.opener = null } catch { /* O navegador pode proteger esta propriedade. */ }
+      }
+      if (notification?.sent > 0) showToast(`${person.full_name} foi chamado. Push enviado e WhatsApp aberto com a mensagem pronta.`)
+      else showToast(`${person.full_name} foi chamado. WhatsApp aberto com a mensagem pronta; push: ${notification?.message || 'nenhum aparelho cadastrado'}.`, 'info')
+      if (!whatsappTab) showToast('O navegador bloqueou o WhatsApp. Use o botão verde do motoboy para abrir a conversa.', 'info')
       await load()
     }
-    catch (error) { showToast(`Não foi possível chamar: ${error.message}`, 'error') }
+    catch (error) {
+      if (whatsappTab) whatsappTab.close()
+      showToast(`Não foi possível chamar: ${error.message}`, 'error')
+    }
     finally { setDispatching(null) }
   }
   return (

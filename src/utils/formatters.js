@@ -6,10 +6,11 @@ export function formatPhone(value = '') {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, split)}-${digits.slice(split)}`
 }
 
-export function whatsappUrl(phone = '') {
+export function whatsappUrl(phone = '', message = '') {
   const digits = phone.replace(/\D/g, '')
   const international = digits.startsWith('55') ? digits : `55${digits}`
-  return `https://wa.me/${international}`
+  const text = message.trim() ? `?text=${encodeURIComponent(message.trim())}` : ''
+  return `https://wa.me/${international}${text}`
 }
 
 export function elapsedTime(date, now = Date.now()) {
