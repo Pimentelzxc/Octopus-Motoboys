@@ -21,7 +21,7 @@ begin
   end if;
 
   queue_definition := pg_get_functiondef('public.get_kitchen_queue()'::regprocedure);
-  dispatch_definition := pg_get_functiondef('public.dispatch_motoboy(uuid,text)'::regprocedure);
+  dispatch_definition := pg_get_functiondef('public.dispatch_motoboy(uuid,text[])'::regprocedure);
 
   if position('public.is_kitchen()' in queue_definition) = 0 then
     raise exception 'get_kitchen_queue não exige o perfil kitchen';
@@ -29,6 +29,14 @@ begin
 
   if position('public.is_kitchen()' in dispatch_definition) = 0 then
     raise exception 'dispatch_motoboy não exige o perfil kitchen';
+  end if;
+
+  if to_regprocedure('public.dispatch_motoboy(uuid,text[])') is null then
+    raise exception 'A função de despacho em lote não foi instalada';
+  end if;
+
+  if to_regclass('public.deliveries_one_active_per_motoboy') is not null then
+    raise exception 'O índice antigo ainda limita o motoboy a um único pedido';
   end if;
 
   if not exists (

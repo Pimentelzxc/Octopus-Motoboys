@@ -5,7 +5,7 @@ import { calculateDeliveryPreview, parseDistance } from '../services/pricingServ
 import { formatCurrency } from '../utils/formatters'
 import { normalizeOrderNumber } from '../utils/orderNumber'
 
-export default function DeliveryFormModal({ open, mode = 'manual', delivery, activeOrder, onClose, onSubmit }) {
+export default function DeliveryFormModal({ open, mode = 'manual', delivery, activeOrder, activeOrdersCount = 0, onClose, onSubmit }) {
   const [orderNumber, setOrderNumber] = useState('')
   const [distance, setDistance] = useState('')
   const [notes, setNotes] = useState('')
@@ -58,7 +58,8 @@ export default function DeliveryFormModal({ open, mode = 'manual', delivery, act
           <div><small>Valor calculado</small><strong>{!preview.valid ? 'Informe a distância' : preview.pending ? '⚠ Valor pendente' : formatCurrency(preview.value)}</strong>{preview.valid && <span>{preview.pending ? 'Acima de 13 km: aprovação do administrador' : `Faixa ${preview.range}`}</span>}</div>
         </div>
         <label className="notes-field"><span>Observação <small>(opcional)</small></span><textarea rows="3" maxLength="500" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Ex: entrega no condomínio, retorno pela avenida..." /></label>
-        {mode === 'finish' && (
+        {mode === 'finish' && activeOrdersCount > 1 && <div className="batch-progress-note"><Bike /><span><strong>Despacho com vários pedidos</strong><small>Após este, ainda restará {activeOrdersCount - 1} pedido(s). Você continuará em entrega.</small></span></div>}
+        {mode === 'finish' && activeOrdersCount <= 1 && (
           <label className="switch-field return-switch"><span><strong>Ficar disponível novamente</strong><small>Você entrará no final da fila com um novo horário.</small></span><input type="checkbox" checked={returnAvailable} onChange={(event) => setReturnAvailable(event.target.checked)} /><i /></label>
         )}
         </>}

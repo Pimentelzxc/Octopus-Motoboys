@@ -40,7 +40,7 @@ O motoboy pode registrar uma entrega manualmente ou finalizar uma corrida inicia
 
 `deliveries.order_number` é `TEXT NOT NULL`, portanto `001` nunca vira `1`. A normalização remove espaços externos/internos e converte letras para maiúsculas sem remover zeros. A combinação `order_number + operational_date` é única para entregas não canceladas: o mesmo número pode reaparecer em outro dia, mas não pode ser registrado duas vezes no mesmo dia.
 
-A cozinha pode informar o pedido ao chamar um motoboy. Nesse caso, uma entrega `in_progress` reserva o número imediatamente e o motoboy informa apenas a quilometragem ao finalizar. Sem número no despacho, o motoboy o informa junto com o KM. Registros manuais nascem diretamente como `completed`.
+A cozinha pode informar até 20 pedidos ao chamar um motoboy. Cada entrega `in_progress` reserva seu número imediatamente; no painel do motoboy, ele escolhe e finaliza cada pedido separadamente com sua própria quilometragem. O motoboy permanece `on_delivery` até concluir o último pedido do lote. Sem número no despacho, ele informa o pedido junto com o KM. Registros manuais nascem diretamente como `completed`.
 
 | Distância                   |                   Valor |
 | ---------------------------- | ----------------------: |

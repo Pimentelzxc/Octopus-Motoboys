@@ -50,9 +50,9 @@ export default function KitchenPage() {
   }, [online, load])
 
   const currentTime = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(now)
-  const callMotoboy = async (person, orderNumber) => {
+  const callMotoboy = async (person, orderNumbers) => {
     setDispatching(person.user_id)
-    try { await dispatchMotoboy(person.user_id, orderNumber); showToast(`${person.full_name} foi chamado${orderNumber ? ` para o pedido #${orderNumber}` : ' para entrega'}.`); setSelectedDispatch(null); await load() }
+    try { await dispatchMotoboy(person.user_id, orderNumbers); const count = orderNumbers.length; showToast(`${person.full_name} foi chamado${count === 1 ? ` para o pedido #${orderNumbers[0]}` : count > 1 ? ` com ${count} pedidos` : ' para entrega'}.`); setSelectedDispatch(null); await load() }
     catch (error) { showToast(`Não foi possível chamar: ${error.message}`, 'error') }
     finally { setDispatching(null) }
   }
@@ -106,7 +106,7 @@ export default function KitchenPage() {
           })}
         </div>
       )}
-      <DispatchModal motoboy={selectedDispatch} open={Boolean(selectedDispatch)} busy={Boolean(dispatching)} onClose={() => setSelectedDispatch(null)} onConfirm={(order) => callMotoboy(selectedDispatch, order)} />
+      <DispatchModal motoboy={selectedDispatch} open={Boolean(selectedDispatch)} busy={Boolean(dispatching)} onClose={() => setSelectedDispatch(null)} onConfirm={(orders) => callMotoboy(selectedDispatch, orders)} />
     </div>
   )
 }

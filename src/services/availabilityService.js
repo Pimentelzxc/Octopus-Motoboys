@@ -53,9 +53,10 @@ export async function getKitchenQueue() {
   return data ?? []
 }
 
-export async function dispatchMotoboy(userId, orderNumber = '') {
+export async function dispatchMotoboy(userId, orderNumbers = []) {
   const client = requireSupabase()
-  const { data, error } = await client.rpc('dispatch_motoboy', { target_motoboy_id: userId, delivery_order_number: normalizeOrderNumber(orderNumber) || null })
+  const normalizedOrders = orderNumbers.map(normalizeOrderNumber).filter(Boolean)
+  const { data, error } = await client.rpc('dispatch_motoboy', { target_motoboy_id: userId, delivery_order_numbers: normalizedOrders })
   if (error) throw error
   return data
 }

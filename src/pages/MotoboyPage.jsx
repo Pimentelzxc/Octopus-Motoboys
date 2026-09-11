@@ -5,7 +5,7 @@ import { useToast } from '../contexts/ToastContext'
 import useNow from '../hooks/useNow'
 import useOnlineStatus from '../hooks/useOnlineStatus'
 import { getMyQueuePosition, getOwnAvailability, setMyStatus, subscribeToAvailability, updateLastSeen } from '../services/availabilityService'
-import { cancelOwnDelivery, finishDispatchedDelivery, getActiveDelivery, getMyTodayDeliveries, registerManualDelivery, subscribeToMyDeliveries, summarizeDeliveries, updateOwnDelivery } from '../services/deliveryService'
+import { cancelOwnDelivery, finishDispatchedDelivery, getActiveDeliveries, getMyTodayDeliveries, registerManualDelivery, subscribeToMyDeliveries, summarizeDeliveries, updateOwnDelivery } from '../services/deliveryService'
 import { getMyPaymentClosings, subscribeToPayments } from '../services/paymentService'
 import { elapsedTime, formatCurrency, formatDistance } from '../utils/formatters'
 import DeliveryFormModal from '../components/DeliveryFormModal'
@@ -21,7 +21,8 @@ export default function MotoboyPage() {
   const [availability, setAvailability] = useState(null)
   const [queuePosition, setQueuePosition] = useState(null)
   const [deliveries, setDeliveries] = useState([])
-  const [activeDelivery, setActiveDelivery] = useState(null)
+  const [activeDeliveries, setActiveDeliveries] = useState([])
+  const [selectedActiveDelivery, setSelectedActiveDelivery] = useState(null)
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [changing, setChanging] = useState(false)
@@ -30,8 +31,8 @@ export default function MotoboyPage() {
 
   const loadOperationalData = useCallback(async () => {
     try {
-      const [statusData, position, todayDeliveries, currentDelivery] = await Promise.all([getOwnAvailability(user.id), getMyQueuePosition(), getMyTodayDeliveries(user.id), getActiveDelivery(user.id)])
-      setAvailability(statusData); setQueuePosition(position); setDeliveries(todayDeliveries); setActiveDelivery(currentDelivery)
+      const [statusData, position, todayDeliveries, currentDeliveries] = await Promise.all([getOwnAvailability(user.id), getMyQueuePosition(), getMyTodayDeliveries(user.id), getActiveDeliveries(user.id)])
+      setAvailability(statusData); setQueuePosition(position); setDeliveries(todayDeliveries); setActiveDeliveries(currentDeliveries)
     } catch (error) { showToast(`Não foi possível atualizar seus dados: ${error.message}`, 'error') }
     finally { setLoading(false) }
   }, [showToast, user.id])
@@ -77,9 +78,10 @@ export default function MotoboyPage() {
   }
 
   const submitDelivery = async ({ orderNumber, distance, notes, returnAvailable }) => {
-    if (deliveryMode === 'finish') await finishDispatchedDelivery(orderNumber, distance, notes, returnAvailable)
+    if (deliveryMode === 'finish') await finishDispatchedDelivery(selectedActiveDelivery?.id, orderNumber, distance, notes, returnAvailable)
     else await registerManualDelivery(orderNumber, distance, notes)
-    showToast(deliveryMode === 'finish' ? 'Entrega finalizada e registrada!' : 'Entrega registrada com sucesso!')
+    const remainingOrders = Math.max(0, activeDeliveries.length - (selectedActiveDelivery ? 1 : 0))
+    showToast(deliveryMode === 'finish' ? remainingOrders > 0 ? `Pedido finalizado. Restam ${remainingOrders} pedido(s) neste despacho.` : 'Entrega finalizada e registrada!' : 'Entrega registrada com sucesso!')
     await loadOperationalData()
   }
   const editDelivery = async (delivery, data) => { await updateOwnDelivery(delivery.id, data.orderNumber, data.distance, data.notes); showToast('Entrega corrigida e valor recalculado.'); await loadOperationalData() }
@@ -96,8 +98,9 @@ export default function MotoboyPage() {
       <section className={`status-control ${stateClass}`}>
         <div className="status-glow" /><div className="status-label"><span className="status-dot" /> Status atual</div>
         <h2>{loading ? 'Consultando...' : onDelivery ? 'Em entrega' : available ? 'Disponível' : 'Indisponível'}</h2>
-        <p className="status-time">{onDelivery ? <><Bike size={18} /> {activeDelivery?.order_number ? `Pedido #${activeDelivery.order_number}` : 'Você foi chamado pela cozinha'}</> : available ? <><Clock3 size={18} /> #{queuePosition ?? '—'} na fila · há {elapsedTime(availability?.available_since, now)}</> : 'Você não está na fila de entregas.'}</p>
-        {onDelivery ? <button className="availability-button availability-button--finish" type="button" onClick={() => setDeliveryMode('finish')} disabled={!online}><span className="availability-button__icon"><PackageCheck /></span><span><small>CORRIDA EM ANDAMENTO</small>Finalizar entrega</span></button> : <button className="availability-button" type="button" onClick={changeStatus} disabled={loading || changing || !online}><span className="availability-button__icon">{changing ? <span className="button-spinner" /> : available ? <Power /> : <Check />}</span><span><small>{available ? 'ENCERRAR TURNO' : 'PRONTO PARA ENTREGAR?'}</small>{changing ? 'Alterando status...' : available ? 'Ficar indisponível' : 'Ficar disponível'}</span></button>}
+        <p className="status-time">{onDelivery ? <><Bike size={18} /> {activeDeliveries.length > 1 ? `${activeDeliveries.length} pedidos em andamento` : activeDeliveries[0]?.order_number ? `Pedido #${activeDeliveries[0].order_number}` : 'Você foi chamado pela cozinha'}</> : available ? <><Clock3 size={18} /> #{queuePosition ?? '—'} na fila · há {elapsedTime(availability?.available_since, now)}</> : 'Você não está na fila de entregas.'}</p>
+        {onDelivery && activeDeliveries.length > 0 && <div className="active-orders-list">{activeDeliveries.map((active) => <button type="button" key={active.id} onClick={() => { setSelectedActiveDelivery(active); setDeliveryMode('finish') }} disabled={!online}><span>Pedido</span><strong>#{active.order_number}</strong><small>Finalizar</small></button>)}</div>}
+        {onDelivery ? <button className="availability-button availability-button--finish" type="button" onClick={() => { setSelectedActiveDelivery(activeDeliveries[0] ?? null); setDeliveryMode('finish') }} disabled={!online}><span className="availability-button__icon"><PackageCheck /></span><span><small>{activeDeliveries.length > 1 ? `${activeDeliveries.length} PEDIDOS EM ANDAMENTO` : 'CORRIDA EM ANDAMENTO'}</small>{activeDeliveries.length > 1 ? `Finalizar #${activeDeliveries[0]?.order_number}` : 'Finalizar entrega'}</span></button> : <button className="availability-button" type="button" onClick={changeStatus} disabled={loading || changing || !online}><span className="availability-button__icon">{changing ? <span className="button-spinner" /> : available ? <Power /> : <Check />}</span><span><small>{available ? 'ENCERRAR TURNO' : 'PRONTO PARA ENTREGAR?'}</small>{changing ? 'Alterando status...' : available ? 'Ficar indisponível' : 'Ficar disponível'}</span></button>}
         {!online && <div className="inline-offline"><WifiOff size={17} /> Reconecte-se para continuar.</div>}
       </section>
       <section className="today-summary">
@@ -108,7 +111,7 @@ export default function MotoboyPage() {
       <PaymentHistory payments={payments} />
       <div className="motoboy-info-grid"><div className="info-tile"><Bike /><span><small>Moto cadastrada</small><strong>{profile.motorcycle_model || 'Não informada'}</strong></span></div><div className="info-tile"><ShieldCheck /><span><small>Operação</small><strong>{onDelivery ? 'Em rota de entrega' : available ? 'Aguardando chamada' : 'Fora da fila'}</strong></span></div></div>
       <ProfileEditor open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSaved={refreshProfile} />
-      <DeliveryFormModal open={Boolean(deliveryMode)} mode={deliveryMode ?? 'manual'} activeOrder={deliveryMode === 'finish' ? activeDelivery?.order_number : null} onClose={() => setDeliveryMode(null)} onSubmit={submitDelivery} />
+      <DeliveryFormModal open={Boolean(deliveryMode)} mode={deliveryMode ?? 'manual'} activeOrder={deliveryMode === 'finish' ? selectedActiveDelivery?.order_number : null} activeOrdersCount={deliveryMode === 'finish' ? activeDeliveries.length : 0} onClose={() => { setDeliveryMode(null); setSelectedActiveDelivery(null) }} onSubmit={submitDelivery} />
     </div>
   )
 }
