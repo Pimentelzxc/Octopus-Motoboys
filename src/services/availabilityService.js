@@ -39,6 +39,13 @@ export async function setMyStatus(status) {
   return data
 }
 
+export async function finishDispatchCall() {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('finish_dispatch_call')
+  if (error) throw error
+  return data
+}
+
 export async function getMyQueuePosition() {
   const client = requireSupabase()
   const { data, error } = await client.rpc('get_my_queue_position')

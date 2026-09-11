@@ -31,7 +31,7 @@ Os estados operacionais são:
 - `available`: na fila, ordenado por `available_since ASC`.
 - `on_delivery`: chamado pela cozinha e removido da fila.
 
-Ao finalizar um despacho, o motoboy decide se quer voltar a ficar disponível. Se voltar, `available_since` recebe o horário atual e ele entra no fim da fila.
+Ao finalizar uma chamada da cozinha, nenhum pedido é criado: o motoboy volta automaticamente a ficar disponível, `available_since` recebe o horário atual e ele entra no fim da fila.
 
 ## Entregas e precificação
 
@@ -41,7 +41,7 @@ O motoboy pode registrar uma entrega manualmente ou finalizar uma corrida inicia
 
 `deliveries.order_number` é `TEXT NOT NULL`, portanto `001` nunca vira `1`. A normalização remove espaços externos/internos e converte letras para maiúsculas sem remover zeros. A combinação `order_number + operational_date` é única para entregas não canceladas: o mesmo número pode reaparecer em outro dia, mas não pode ser registrado duas vezes no mesmo dia.
 
-A cozinha apenas chama o motoboy, sem cadastrar ou reservar pedidos. Ao finalizar a corrida, o próprio motoboy informa o número do pedido e a quilometragem. Registros manuais nascem diretamente como `completed`.
+A cozinha apenas chama o motoboy, sem cadastrar ou reservar pedidos. Ao finalizar a corrida, ele volta diretamente ao fim da fila, sem formulário e sem gerar entrega. Quando quiser registrar um pedido realizado, o motoboy usa separadamente o botão **Registrar entrega** na tela inicial; esses registros manuais nascem diretamente como `completed`.
 
 | Distância                   |                   Valor |
 | ---------------------------- | ----------------------: |

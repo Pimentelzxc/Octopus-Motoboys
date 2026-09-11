@@ -22,29 +22,9 @@ export async function getMyTodayDeliveries(userId) {
   return data ?? []
 }
 
-export async function getActiveDeliveries(userId) {
-  const client = requireSupabase()
-  const { data, error } = await client.from('deliveries').select('*').eq('motoboy_id', userId).eq('status', 'in_progress').order('created_at', { ascending: true })
-  if (error) throw error
-  return data ?? []
-}
-
 export async function registerManualDelivery(orderNumber, distanceKm, notes) {
   const client = requireSupabase()
   const { data, error } = await client.rpc('register_manual_delivery', { delivery_order_number: normalizeOrderNumber(orderNumber), delivery_distance_km: distanceKm, delivery_notes: notes || null })
-  if (error) throw error
-  return data
-}
-
-export async function finishDispatchedDelivery(deliveryId, orderNumber, distanceKm, notes, returnToAvailable) {
-  const client = requireSupabase()
-  const { data, error } = await client.rpc('finish_dispatched_delivery', {
-    target_delivery_id: deliveryId || null,
-    delivery_distance_km: distanceKm,
-    delivery_order_number: normalizeOrderNumber(orderNumber),
-    delivery_notes: notes || null,
-    return_to_available: returnToAvailable,
-  })
   if (error) throw error
   return data
 }

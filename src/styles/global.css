@@ -129,12 +129,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .status-control--available h2 { color: #91f3c8; }
 .status-control--delivery h2 { color: #ffd29e; }
 .status-time { position: relative; z-index: 1; color: var(--muted); min-height: 25px; display: flex; align-items: center; gap: 7px; }
-.active-orders-list { position: relative; z-index: 1; width: min(100%, 520px); display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 12px; scrollbar-width: thin; }
-.active-orders-list button { flex: 0 0 auto; min-width: 118px; display: grid; gap: 2px; padding: 10px 13px; border: 1px solid rgba(255,173,96,.24); border-radius: 12px; background: rgba(255,159,67,.08); color: white; cursor: pointer; }
-.active-orders-list button:hover:not(:disabled) { border-color: rgba(255,173,96,.5); }
-.active-orders-list button span, .active-orders-list button small { color: #c9a989; font-size: .58rem; text-transform: uppercase; letter-spacing: .08em; }
-.active-orders-list button strong { color: #ffd29e; font-size: 1rem; }
-.active-orders-list button:disabled { opacity: .55; }
 .availability-button { position: relative; z-index: 1; width: min(100%, 450px); min-height: 112px; margin-top: auto; padding: 16px 22px; border: 1px solid rgba(41,207,136,.32); border-radius: 22px; background: linear-gradient(145deg, #16865a, #0b593d); color: white; display: flex; align-items: center; text-align: left; gap: 16px; cursor: pointer; box-shadow: 0 18px 38px rgba(11,89,61,.28), inset 0 1px rgba(255,255,255,.1); transition: transform .18s ease, filter .18s ease; }
 .availability-button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
 .status-control--available .availability-button { background: linear-gradient(145deg, #922743, #641427); border-color: rgba(239,92,101,.28); box-shadow: 0 18px 38px rgba(100,20,39,.3), inset 0 1px rgba(255,255,255,.1); }
@@ -228,10 +222,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .delivery-confirmation dl > div:first-child dd { color: var(--cream); font-size: 1.25rem; }
 .delivery-confirm-actions { display: flex; gap: 8px; }
 .delivery-confirm-actions .button--full { flex: 1; }
-.batch-progress-note { display: flex; align-items: center; gap: 11px; padding: 12px; border: 1px solid rgba(255,159,67,.2); border-radius: 13px; background: rgba(255,159,67,.07); color: #ffd29e; }
-.batch-progress-note > svg { flex: 0 0 auto; }
-.batch-progress-note span { display: grid; text-align: left; }
-.batch-progress-note small { color: var(--muted); font-size: .65rem; }
 .delivery-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .order-detail-banner { grid-column: 1/-1; display: flex; align-items: baseline; justify-content: center; gap: 7px; padding: 13px; border-radius: 13px; color: var(--muted); background: rgba(244,223,180,.05); }
 .order-detail-banner strong { color: var(--cream); font-size: 1.35rem; }

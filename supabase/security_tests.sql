@@ -3,6 +3,7 @@ do $$
 declare
   queue_definition text;
   dispatch_definition text;
+  finish_definition text;
 begin
   if not exists (
     select 1
@@ -22,6 +23,7 @@ begin
 
   queue_definition := pg_get_functiondef('public.get_kitchen_queue()'::regprocedure);
   dispatch_definition := pg_get_functiondef('public.dispatch_motoboy(uuid)'::regprocedure);
+  finish_definition := pg_get_functiondef('public.finish_dispatch_call()'::regprocedure);
 
   if position('public.is_kitchen()' in queue_definition) = 0 then
     raise exception 'get_kitchen_queue não exige o perfil kitchen';
@@ -42,6 +44,17 @@ begin
 
   if position('insert into public.deliveries' in lower(dispatch_definition)) > 0 then
     raise exception 'A chamada simples ainda cria pedidos pela cozinha';
+  end if;
+
+  if position('public.can_operate_motoboy' in finish_definition) = 0
+    or position('insert into public.deliveries' in lower(finish_definition)) > 0 then
+    raise exception 'A finalização da chamada não está protegida ou ainda cria pedido';
+  end if;
+
+  if to_regprocedure('public.finish_dispatched_delivery(uuid,text,numeric,text,boolean)') is not null
+    or to_regprocedure('public.finish_dispatched_delivery(text,numeric,text,boolean)') is not null
+    or to_regprocedure('public.finish_dispatched_delivery(numeric,text,boolean)') is not null then
+    raise exception 'Uma função antiga ainda exige pedido ao finalizar a chamada';
   end if;
 
   if to_regclass('public.push_subscriptions') is null
