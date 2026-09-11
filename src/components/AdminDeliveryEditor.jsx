@@ -4,7 +4,7 @@ import { parseDistance } from '../services/pricingService'
 import { formatCurrency } from '../utils/formatters'
 import { normalizeOrderNumber } from '../utils/orderNumber'
 
-export default function AdminDeliveryEditor({ delivery, open, onClose, onSave, onCancelDelivery }) {
+export default function AdminDeliveryEditor({ delivery, open, onClose, onSave, onDeleteDelivery }) {
   const [orderNumber, setOrderNumber] = useState('')
   const [distance, setDistance] = useState('')
   const [notes, setNotes] = useState('')
@@ -30,6 +30,6 @@ export default function AdminDeliveryEditor({ delivery, open, onClose, onSave, o
     <label className="plain-field"><span>Quilometragem</span><div><input value={distance} onChange={(e) => setDistance(e.target.value.replace(/[^\d.,]/g, ''))} inputMode="decimal" /><b>km</b></div></label>
     <label className="plain-field"><span>Valor final ajustado</span><div><b>R$</b><input value={value} onChange={(e) => setValue(e.target.value.replace(/[^\d.,]/g, ''))} inputMode="decimal" placeholder="Vazio = cálculo automático" /></div><small>Atual: {formatCurrency(delivery.final_value)}. Preencha somente quando precisar substituir o cálculo ou aprovar uma distância acima de 13 km.</small></label>
     <label className="notes-field"><span>Observação</span><textarea rows="3" value={notes} onChange={(e) => setNotes(e.target.value)} /></label>
-    <div className="modal-actions"><button type="button" className="button button--danger" disabled={busy || delivery.payment_closing_id} onClick={() => onCancelDelivery(delivery)}>Cancelar entrega</button><button className="button button--primary" disabled={busy || delivery.payment_closing_id}>{busy ? 'Salvando...' : 'Salvar correção'}</button></div>
+    <div className="modal-actions"><button type="button" className="button button--danger" disabled={busy || delivery.payment_closing_id} onClick={() => onDeleteDelivery(delivery)}>Excluir entrega</button><button className="button button--primary" disabled={busy || delivery.payment_closing_id}>{busy ? 'Salvando...' : 'Salvar correção'}</button></div>
   </form></Modal>
 }

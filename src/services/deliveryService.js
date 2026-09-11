@@ -36,7 +36,7 @@ export async function updateOwnDelivery(deliveryId, orderNumber, distanceKm, not
   return data
 }
 
-export async function cancelOwnDelivery(deliveryId) {
+export async function deleteOwnDelivery(deliveryId) {
   const client = requireSupabase()
   const { error } = await client.rpc('motoboy_cancel_delivery', { target_delivery_id: deliveryId })
   if (error) throw error
@@ -55,7 +55,7 @@ export async function adminUpdateDelivery(deliveryId, orderNumber, distanceKm, n
   return data
 }
 
-export async function adminCancelDelivery(deliveryId) {
+export async function adminDeleteDelivery(deliveryId) {
   const client = requireSupabase()
   const { data, error } = await client.rpc('admin_cancel_delivery', { target_delivery_id: deliveryId })
   if (error) throw error

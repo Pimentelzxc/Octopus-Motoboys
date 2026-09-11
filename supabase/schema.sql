@@ -569,11 +569,16 @@ $$;
 
 create or replace function public.motoboy_cancel_delivery(target_delivery_id uuid)
 returns void language plpgsql security definer set search_path = '' as $$
+declare deleted_delivery public.deliveries;
 begin
-  update public.deliveries set status = 'cancelled'
-  where id = target_delivery_id and motoboy_id = auth.uid() and status <> 'cancelled' and payment_closing_id is null
-    and delivered_at >= now() - interval '10 minutes';
-  if not found then raise exception 'O prazo de cancelamento expirou ou a entrega já foi fechada'; end if;
+  if not public.can_operate_motoboy(auth.uid()) then raise exception 'Acesso exclusivo do motoboy'; end if;
+  delete from public.deliveries
+  where id = target_delivery_id and motoboy_id = auth.uid() and status in ('completed','adjusted') and payment_closing_id is null
+    and delivered_at >= now() - interval '10 minutes' returning * into deleted_delivery;
+  if deleted_delivery.id is null then raise exception 'O prazo de exclusão expirou ou a entrega já foi fechada'; end if;
+  delete from public.audit_logs where entity_type = 'delivery' and entity_id = deleted_delivery.id;
+  insert into public.delivery_activity(motoboy_id, updated_at) values (deleted_delivery.motoboy_id, now())
+  on conflict (motoboy_id) do update set updated_at = excluded.updated_at;
 end;
 $$;
 
@@ -595,8 +600,11 @@ returns public.deliveries language plpgsql security definer set search_path = ''
 declare result public.deliveries;
 begin
   if not public.is_admin() then raise exception 'Acesso negado'; end if;
-  update public.deliveries set status = 'cancelled' where id = target_delivery_id and payment_closing_id is null returning * into result;
+  delete from public.deliveries where id = target_delivery_id and payment_closing_id is null and status in ('completed','adjusted') returning * into result;
   if result.id is null then raise exception 'Entrega fechada ou não encontrada'; end if;
+  delete from public.audit_logs where entity_type = 'delivery' and entity_id = result.id;
+  insert into public.delivery_activity(motoboy_id, updated_at) values (result.motoboy_id, now())
+  on conflict (motoboy_id) do update set updated_at = excluded.updated_at;
   return result;
 end;
 $$;

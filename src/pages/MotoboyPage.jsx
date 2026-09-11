@@ -6,7 +6,7 @@ import { useToast } from '../contexts/ToastContext'
 import useNow from '../hooks/useNow'
 import useOnlineStatus from '../hooks/useOnlineStatus'
 import { finishDispatchCall, getMyQueuePosition, getOwnAvailability, setMyStatus, subscribeToAvailability, updateLastSeen } from '../services/availabilityService'
-import { cancelOwnDelivery, getMyDeliveries, getMyTodayDeliveries, registerManualDelivery, subscribeToMyDeliveries, summarizeDeliveries, updateOwnDelivery } from '../services/deliveryService'
+import { deleteOwnDelivery, getMyDeliveries, getMyTodayDeliveries, registerManualDelivery, subscribeToMyDeliveries, summarizeDeliveries, updateOwnDelivery } from '../services/deliveryService'
 import { getMyPaymentClosings, subscribeToPayments } from '../services/paymentService'
 import { elapsedTime, formatCurrency, formatDistance } from '../utils/formatters'
 import DeliveryFormModal from '../components/DeliveryFormModal'
@@ -98,9 +98,9 @@ export default function MotoboyPage() {
     await loadOperationalData()
   }
   const editDelivery = async (delivery, data) => { await updateOwnDelivery(delivery.id, data.orderNumber, data.distance, data.notes); showToast('Entrega corrigida e valor recalculado.'); await loadOperationalData() }
-  const cancelDelivery = async (delivery) => {
-    if (!window.confirm('Cancelar este registro de entrega? O histórico será preservado.')) return
-    try { await cancelOwnDelivery(delivery.id); showToast('Entrega cancelada.', 'info'); await loadOperationalData() }
+  const deleteDelivery = async (delivery) => {
+    if (!window.confirm('Excluir esta entrega definitivamente? Esta ação não pode ser desfeita.')) return
+    try { await deleteOwnDelivery(delivery.id); showToast('Entrega excluída definitivamente.', 'info'); await loadOperationalData() }
     catch (error) { showToast(error.message, 'error') }
   }
 
@@ -134,7 +134,7 @@ export default function MotoboyPage() {
           <div className="summary-grid"><div><PackageCheck /><span><small>Entregas</small><strong>{summary.count}</strong></span></div><div><MapPinned /><span><small>Quilometragem</small><strong>{formatDistance(summary.distance)}</strong></span></div><div><WalletCards /><span><small>Valor</small><strong>{formatCurrency(summary.amount)}</strong>{summary.pending > 0 && <em>{summary.pending} pendente</em>}</span></div></div>
         </section>
       </>}
-      {section === 'history' && <DeliveryHistory deliveries={deliveries} onEdit={editDelivery} onCancel={cancelDelivery} />}
+      {section === 'history' && <DeliveryHistory deliveries={deliveries} onEdit={editDelivery} onDelete={deleteDelivery} />}
       {section === 'finance' && <PaymentHistory payments={payments} />}
       {section === 'settings' && <>
         <PushNotificationSettings />
