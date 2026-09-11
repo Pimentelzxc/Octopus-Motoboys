@@ -431,6 +431,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .admin-stats strong { color: var(--text); font-size: 1.75rem; line-height: 1.15; order: -1; }
 .admin-panel { border: 1px solid var(--border); border-radius: 20px; background: var(--surface); overflow: hidden; }
 .admin-toolbar { display: flex; flex-direction: column; gap: 13px; padding: 17px; border-bottom: 1px solid var(--border); }
+.admin-create-button { width: 100%; white-space: nowrap; }
 .search-box { min-height: 45px; display: flex; align-items: center; gap: 10px; padding: 0 13px; border: 1px solid var(--border); border-radius: 12px; background: #110e0f; color: var(--muted); }
 .search-box:focus-within { border-color: rgba(244,223,180,.35); }
 .search-box input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--text); }
@@ -515,6 +516,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .page-container { padding-top: 46px; padding-bottom: 55px; }
   .queue-overview { padding: 24px 27px; }
   .admin-toolbar { flex-direction: row; align-items: center; }
+  .admin-create-button { width: auto; }
   .search-box { width: min(100%, 440px); }
   .filter-tabs { margin-left: auto; width: 320px; }
 }

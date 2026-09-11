@@ -45,3 +45,30 @@ export async function adminDeleteUser(userId) {
   const { error } = await client.rpc('admin_delete_user', { target_user_id: userId })
   if (error) throw error
 }
+
+export async function adminCreateUser(form) {
+  const client = requireSupabase()
+  const { data, error } = await client.functions.invoke('admin-create-user', {
+    body: {
+      fullName: form.fullName.trim(),
+      username: form.username.trim().toLowerCase(),
+      phone: form.phone.trim(),
+      email: form.email.trim().toLowerCase(),
+      password: form.password,
+      role: form.role,
+      motorcycleModel: form.motorcycleModel.trim() || null,
+      motorcyclePlate: form.motorcyclePlate.trim().toUpperCase() || null,
+    },
+  })
+  if (error) {
+    let message = error.message
+    try {
+      const details = await error.context?.json()
+      if (details?.error) message = details.error
+    } catch {
+      // Mantém a mensagem original quando a resposta não contém JSON.
+    }
+    throw new Error(message)
+  }
+  return data?.profile
+}

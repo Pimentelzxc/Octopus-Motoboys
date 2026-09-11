@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BarChart3, CheckCircle2, Pencil, Search, ShieldCheck, Trash2, UserRoundX, UsersRound } from 'lucide-react'
+import { BarChart3, CheckCircle2, Pencil, Search, ShieldCheck, Trash2, UserPlus, UserRoundX, UsersRound } from 'lucide-react'
 import AdminUserEditor from '../components/AdminUserEditor'
+import AdminUserCreator from '../components/AdminUserCreator'
 import AdminOperations from '../components/AdminOperations'
 import EmptyState from '../components/EmptyState'
 import { useAuth } from '../contexts/AuthContext'
@@ -31,6 +32,7 @@ export default function AdminPage() {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
   const [editing, setEditing] = useState(null)
+  const [creating, setCreating] = useState(false)
   const [deleting, setDeleting] = useState(null)
   const [section, setSection] = useState('operations')
 
@@ -107,6 +109,7 @@ export default function AdminPage() {
       <section className="admin-panel">
         <div className="admin-toolbar">
           <label className="search-box"><Search size={19} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome, usuário ou e-mail" /></label>
+          <button type="button" className="button button--primary admin-create-button" onClick={() => setCreating(true)}><UserPlus size={18} /> Cadastrar usuário</button>
           <div className="filter-tabs" role="group" aria-label="Filtrar usuários">
             {filters.map((item) => <button type="button" key={item.id} className={filter === item.id ? 'active' : ''} onClick={() => setFilter(item.id)}>{item.label}</button>)}
           </div>
@@ -142,6 +145,7 @@ export default function AdminPage() {
         )}
       </section>
       </>}
+      <AdminUserCreator open={creating} onClose={() => setCreating(false)} onSaved={load} />
       <AdminUserEditor userProfile={editing} open={Boolean(editing)} onClose={() => setEditing(null)} onSaved={load} />
     </div>
   )
