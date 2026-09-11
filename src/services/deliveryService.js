@@ -1,12 +1,6 @@
 import { requireSupabase } from '../lib/supabase'
 import { normalizeOrderNumber } from '../utils/orderNumber'
-
-function currentOperationalDate() {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
-  }).formatToParts(new Date()).reduce((result, part) => ({ ...result, [part.type]: part.value }), {})
-  return `${parts.year}-${parts.month}-${parts.day}`
-}
+import { getOperationalDate } from '../utils/operationalDates'
 
 export async function getMyDeliveries(userId, limit = 100) {
   const client = requireSupabase()
@@ -17,9 +11,22 @@ export async function getMyDeliveries(userId, limit = 100) {
 
 export async function getMyTodayDeliveries(userId) {
   const client = requireSupabase()
-  const { data, error } = await client.from('deliveries').select('*').eq('motoboy_id', userId).eq('operational_date', currentOperationalDate()).order('delivered_at', { ascending: false })
+  const { data, error } = await client.from('deliveries').select('*').eq('motoboy_id', userId).eq('operational_date', getOperationalDate()).order('delivered_at', { ascending: false })
   if (error) throw error
   return data ?? []
+}
+
+export async function getMyDeliveriesSince(userId, startDate) {
+  const client = requireSupabase()
+  const pageSize = 1000
+  const deliveries = []
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await client.from('deliveries').select('*').eq('motoboy_id', userId).gte('operational_date', startDate).in('status', ['completed', 'adjusted']).order('delivered_at', { ascending: false }).range(from, from + pageSize - 1)
+    if (error) throw error
+    deliveries.push(...(data ?? []))
+    if (!data || data.length < pageSize) break
+  }
+  return deliveries
 }
 
 export async function registerManualDelivery(orderNumber, distanceKm, notes) {

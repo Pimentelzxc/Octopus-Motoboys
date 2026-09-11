@@ -6,11 +6,13 @@ import { useToast } from '../contexts/ToastContext'
 import useNow from '../hooks/useNow'
 import useOnlineStatus from '../hooks/useOnlineStatus'
 import { finishDispatchCall, getMyQueuePosition, getOwnAvailability, setMyStatus, subscribeToAvailability, updateLastSeen } from '../services/availabilityService'
-import { deleteOwnDelivery, getMyDeliveries, getMyTodayDeliveries, registerManualDelivery, subscribeToMyDeliveries, summarizeDeliveries, updateOwnDelivery } from '../services/deliveryService'
+import { deleteOwnDelivery, getMyDeliveries, getMyDeliveriesSince, getMyTodayDeliveries, registerManualDelivery, subscribeToMyDeliveries, summarizeDeliveries, updateOwnDelivery } from '../services/deliveryService'
 import { getMyPaymentClosings, subscribeToPayments } from '../services/paymentService'
 import { elapsedTime, formatCurrency, formatDistance } from '../utils/formatters'
+import { getFinancialPeriodDates } from '../utils/operationalDates'
 import DeliveryFormModal from '../components/DeliveryFormModal'
 import DeliveryHistory from '../components/DeliveryHistory'
+import FinancialOverview from '../components/FinancialOverview'
 import PaymentHistory from '../components/PaymentHistory'
 import ProfileEditor from '../components/ProfileEditor'
 import PushNotificationSettings from '../components/PushNotificationSettings'
@@ -25,6 +27,7 @@ export default function MotoboyPage() {
   const [queuePosition, setQueuePosition] = useState(null)
   const [deliveries, setDeliveries] = useState([])
   const [todayDeliveries, setTodayDeliveries] = useState([])
+  const [financialDeliveries, setFinancialDeliveries] = useState([])
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [changing, setChanging] = useState(false)
@@ -33,8 +36,9 @@ export default function MotoboyPage() {
 
   const loadOperationalData = useCallback(async () => {
     try {
-      const [statusData, position, today, history] = await Promise.all([getOwnAvailability(user.id), getMyQueuePosition(), getMyTodayDeliveries(user.id), getMyDeliveries(user.id)])
-      setAvailability(statusData); setQueuePosition(position); setTodayDeliveries(today); setDeliveries(history)
+      const financialStart = getFinancialPeriodDates().queryStart
+      const [statusData, position, today, history, financial] = await Promise.all([getOwnAvailability(user.id), getMyQueuePosition(), getMyTodayDeliveries(user.id), getMyDeliveries(user.id), getMyDeliveriesSince(user.id, financialStart)])
+      setAvailability(statusData); setQueuePosition(position); setTodayDeliveries(today); setDeliveries(history); setFinancialDeliveries(financial)
     } catch (error) { showToast(`Não foi possível atualizar seus dados: ${error.message}`, 'error') }
     finally { setLoading(false) }
   }, [showToast, user.id])
@@ -135,7 +139,7 @@ export default function MotoboyPage() {
         </section>
       </>}
       {section === 'history' && <DeliveryHistory deliveries={deliveries} onEdit={editDelivery} onDelete={deleteDelivery} />}
-      {section === 'finance' && <PaymentHistory payments={payments} />}
+      {section === 'finance' && <><FinancialOverview deliveries={financialDeliveries} now={now} /><PaymentHistory payments={payments} /></>}
       {section === 'settings' && <>
         <PushNotificationSettings />
         <section className="motoboy-section profile-settings">

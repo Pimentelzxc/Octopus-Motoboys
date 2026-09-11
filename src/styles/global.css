@@ -193,6 +193,22 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .payment-card > strong { font-size: 1.35rem; }
 .payment-card > p { color: var(--muted); font-size: .72rem; margin: 4px 0 0; }
 .payment-card > p i { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: #5f5559; margin: 0 7px; vertical-align: middle; }
+.financial-overview { margin-top: 16px; border: 1px solid rgba(244,223,180,.14); border-radius: 21px; padding: 20px; background: linear-gradient(145deg, rgba(113,17,47,.2), var(--surface) 42%); }
+.financial-period-grid { display: grid; gap: 12px; }
+.financial-period { min-width: 0; padding: 15px; border: 1px solid var(--border); border-radius: 17px; background: #110e0f; }
+.financial-period header { display: flex; align-items: center; gap: 9px; margin-bottom: 12px; }
+.financial-period header > span { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; color: var(--cream); background: rgba(244,223,180,.07); }
+.financial-period header svg { width: 17px; }
+.financial-period h3 { margin: 0; font-size: .88rem; }
+.financial-period__metrics { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.financial-period__metrics > div { min-width: 0; min-height: 78px; padding: 11px; display: flex; align-items: center; gap: 9px; border-radius: 13px; background: rgba(255,255,255,.035); }
+.financial-period__metrics svg { flex: 0 0 18px; width: 18px; color: var(--green); }
+.financial-period__metrics span { min-width: 0; display: grid; }
+.financial-period__metrics small { color: var(--muted); font-size: .62rem; }
+.financial-period__metrics strong { overflow-wrap: anywhere; font-size: .95rem; }
+.financial-period > p { display: flex; align-items: center; gap: 6px; margin: 11px 0 0; color: var(--muted); font-size: .68rem; }
+.financial-period > p svg { width: 15px; }
+.financial-period > p em { color: var(--amber); font-style: normal; }
 .delivery-form { display: grid; gap: 15px; }
 .delivery-form__hero { display: flex; align-items: center; gap: 12px; }
 .delivery-form__hero > span { width: 45px; height: 45px; display: grid; place-items: center; border-radius: 13px; background: rgba(244,223,180,.08); color: var(--cream); }
@@ -504,6 +520,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .modal { width: min(100%, 650px); border-radius: 22px; }
   .toast-stack { bottom: 22px; right: 22px; }
   .operations-stats { grid-template-columns: repeat(3, 1fr); }
+  .financial-period-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (min-width: 760px) {
