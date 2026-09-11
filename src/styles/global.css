@@ -407,7 +407,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .waiting-time small { color: var(--muted); font-size: .65rem; }
 .waiting-time strong { font-size: 1.2rem; }
 .stale-warning { margin-top: 10px; border-radius: 9px; padding: 8px 10px; font-size: .72rem; color: #ffd18b; background: rgba(255,189,85,.08); border: 1px solid rgba(255,189,85,.15); }
-.whatsapp-link { margin-top: 12px; min-height: 52px; border-radius: 13px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; border: 1px solid rgba(109,255,178,.3); background: linear-gradient(135deg, #25d366, #128c63); box-shadow: 0 10px 24px rgba(18,140,99,.2); transition: transform .18s ease, filter .18s ease; }
+.whatsapp-link { margin-top: 12px; min-height: 52px; border-radius: 13px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; border: 1px solid #25d366; background: #25d366; box-shadow: 0 10px 24px rgba(37,211,102,.22); transition: transform .18s ease, filter .18s ease; }
 .whatsapp-link:hover { filter: brightness(1.08); transform: translateY(-1px); }
 .whatsapp-link span { display: grid; }
 .whatsapp-link small { color: rgba(255,255,255,.72); font-size: .61rem; }
